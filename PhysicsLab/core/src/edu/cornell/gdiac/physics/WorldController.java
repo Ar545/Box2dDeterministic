@@ -21,12 +21,9 @@ import java.util.Iterator;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.obstacle.*;
@@ -87,7 +84,9 @@ public abstract class WorldController implements Screen {
 
 
 	/** The Box2D world */
-	protected World world;
+	protected World real_world;
+	/** The Box2D world */
+	protected World draw_world;
 	/** The boundary of the world */
 	protected Rectangle bounds;
 	/** The world scale */
@@ -248,7 +247,7 @@ public abstract class WorldController implements Screen {
 	 * @param gravity	The gravitational force on this Box2d world
 	 */
 	protected WorldController(Rectangle bounds, Vector2 gravity) {
-		world = new World(gravity,false);
+		real_world = new World(gravity,false);
 		this.bounds = new Rectangle(bounds);
 		this.scale = new Vector2(1,1);
 		complete = false;
@@ -263,16 +262,16 @@ public abstract class WorldController implements Screen {
 	 */
 	public void dispose() {
 		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
+			obj.deactivatePhysics(real_world);
 		}
 		objects.clear();
 		addQueue.clear();
-		world.dispose();
+		real_world.dispose();
 		objects = null;
 		addQueue = null;
 		bounds = null;
 		scale  = null;
-		world  = null;
+		real_world = null;
 		canvas = null;
 	}
 
@@ -313,7 +312,7 @@ public abstract class WorldController implements Screen {
 	protected void addObject(Obstacle obj) {
 		assert inBounds(obj) : "Object is not in bounds";
 		objects.add(obj);
-		obj.activatePhysics(world);
+		obj.activatePhysics(real_world);
 	}
 
 	/**
@@ -404,6 +403,37 @@ public abstract class WorldController implements Screen {
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public abstract void update(float dt);
+
+
+	/** The amount of time for a single engine step */
+	float stepssize;
+
+	/** The amount of times to split up our steps */
+	int stepsplits;
+
+	/** The left over time that needs to be iterated for next frame */
+	float remainingtime;
+	/** The number of velocity iterations for the constrain solvers per ministep */
+	int obstacle_velocity;
+	/** The number of position iterations for the constrain solvers per ministep*/
+	int obstacle_position;
+	/** Whether or not the simulation has been forcefully stopped */
+	boolean stopped;
+
+	/** Checks if we should stop the physics world or not */
+	void checkStop(float ministep) {
+//		if (_time > _maxTime / 10) {
+//			_stopped = true;
+//			// Check each obstacle; if any are above the min speed, then keep simulating.
+//			for (auto it : _objects) {
+//				// This scales the _minSpeed value up to its max value as _time nears _maxTime
+//				if (it.second->getLinearVelocity().length() > _minSpeed * (_time / _maxTime)) {
+//					_stopped = false;
+//				}
+//			}
+//		}
+//		_time += ministep;
+	}
 	
 	/**
 	 * Processes physics
@@ -419,9 +449,77 @@ public abstract class WorldController implements Screen {
 		while (!addQueue.isEmpty()) {
 			addObject(addQueue.poll());
 		}
-		
+
+		/* REMOVED IMPLEMENTATION
+		real_world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+ 		END REMOVED IMPLEMENTATION */
+
 		// Turn the physics engine crank.
-		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+		// The mini step size. This is the "mini" steps we will use to get "close enough" to the amount of time that has actually passed.
+		float ministep = stepssize / (float)stepsplits;
+		// The total time needed to simulate
+		float totaltime = remainingtime + dt;
+		// The total sim time (needed for obj->update)
+		float totalsimtime = remainingtime + dt;
+		while (totaltime > ministep) {
+			for (Obstacle it : objects) {
+//				it.second.updatePhysics(ministep, ministep, true);
+			}
+			real_world.step(ministep, obstacle_velocity, obstacle_position);
+        /*if (_writer) {
+            for (auto it : _objects) {
+                float test0 = it.second->getPosition().x;
+                float test1 = it.second->getPosition().y;
+                float test2 = it.second->getLinearVelocity().x;
+                float test3 = it.second->getLinearVelocity().y;
+                int* x0 = (int*)&(test0);
+                int* y0 = (int*)&(test1);
+                int* x1 = (int*)&(test2);
+                int* y1 = (int*)&(test3);
+                std::string pointsStr = "position, velocity: ";
+                pointsStr.append("[");
+                pointsStr.append(std::to_string(*x0));
+                pointsStr.append(", ");
+                pointsStr.append(std::to_string(*y0));
+                pointsStr.append("], ");
+                pointsStr.append("[");
+                pointsStr.append(std::to_string(*x1));
+                pointsStr.append(", ");
+                pointsStr.append(std::to_string(*y1));
+                pointsStr.append("]");
+                pointsStr.append(", id = ");
+                pointsStr.append(std::to_string(it.second->getId()));
+                _writer->writeLine(pointsStr);
+            }
+        }*/
+			checkStop(ministep);
+			if (stopped) {
+//				_time = 0;
+				remainingtime = 0;
+				for (Obstacle it : objects) {
+//					it.second->setLinearVelocity(Vec2::ZERO);
+//					it.second->syncBodies();
+				}
+				return;
+			}
+			totaltime -= ministep;
+		}
+
+		// Now our real world is in the right state. Make one final step to set up the draw world and remember the remaining time from this frame
+		remainingtime = totaltime;
+		// Sync real body to draw body
+		for (Obstacle it : objects) {
+//			it.second->syncBodies();
+//			it.second->updatePhysics(_remainingtime, ministep, false);
+		}
+		// Step the draw world by the remaining time
+		draw_world.step(remainingtime, obstacle_velocity, obstacle_position);
+
+		// Post process all objects after physics (this updates graphics)
+		for(Obstacle it : objects) {
+//			Obstacle* obj = it.second.get();
+//			obj->update(totalsimtime);
+		}
 
 		// Garbage collect the deleted objects.
 		// Note how we use the linked list nodes to delete O(1) in place.
@@ -431,7 +529,7 @@ public abstract class WorldController implements Screen {
 			PooledList<Obstacle>.Entry entry = iterator.next();
 			Obstacle obj = entry.getValue();
 			if (obj.isRemoved()) {
-				obj.deactivatePhysics(world);
+				obj.deactivatePhysics(real_world);
 				entry.remove();
 			} else {
 				// Note that update is called last!

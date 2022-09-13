@@ -37,7 +37,8 @@ import edu.cornell.gdiac.physics.*;  // For GameCanvas
  * and fixture information into a single interface.
  */
 public abstract class Obstacle {
-	/// Initialization structures to store body information
+    public Obstacle second;
+    /// Initialization structures to store body information
 	/** Stores the body information for this shape */
 	protected BodyDef bodyinfo;
 	/** Stores the fixture information for this shape */

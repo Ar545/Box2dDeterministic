@@ -13,14 +13,11 @@ package edu.cornell.gdiac.physics.platform;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.audio.*;
-import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.physics.rocket.RocketModel;
-import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.*;
 import edu.cornell.gdiac.physics.obstacle.*;
 
@@ -76,7 +73,7 @@ public class PlatformController extends WorldController implements ContactListen
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
-		world.setContactListener(this);
+		real_world.setContactListener(this);
 		sensorFixtures = new ObjectSet<Fixture>();
 	}
 
@@ -108,17 +105,17 @@ public class PlatformController extends WorldController implements ContactListen
 	 * This method disposes of the world and creates a new one.
 	 */
 	public void reset() {
-		Vector2 gravity = new Vector2(world.getGravity() );
+		Vector2 gravity = new Vector2(real_world.getGravity() );
 		
 		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
+			obj.deactivatePhysics(real_world);
 		}
 		objects.clear();
 		addQueue.clear();
-		world.dispose();
+		real_world.dispose();
 		
-		world = new World(gravity,false);
-		world.setContactListener(this);
+		real_world = new World(gravity,false);
+		real_world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
 		populateLevel();
@@ -177,7 +174,7 @@ public class PlatformController extends WorldController implements ContactListen
 	    }
 
 	    // This world is heavier
-		world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
+		real_world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
 
 		// Create dude
 		dwidth  = avatarTexture.getRegionWidth()/scale.x;

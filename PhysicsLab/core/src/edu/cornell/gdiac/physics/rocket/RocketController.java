@@ -11,7 +11,6 @@
 package edu.cornell.gdiac.physics.rocket;
 
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -85,7 +84,7 @@ public class RocketController extends WorldController implements ContactListener
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
-		world.setContactListener(this);
+		real_world.setContactListener(this);
 	}
 
 	/**
@@ -120,17 +119,17 @@ public class RocketController extends WorldController implements ContactListener
 	 * This method disposes of the world and creates a new one.
 	 */
 	public void reset() {
-		Vector2 gravity = new Vector2(world.getGravity() );
+		Vector2 gravity = new Vector2(real_world.getGravity() );
 		
 		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
+			obj.deactivatePhysics(real_world);
 		}
 		objects.clear();
 		addQueue.clear();
-		world.dispose();
+		real_world.dispose();
 		
-		world = new World(gravity,false);
-		world.setContactListener(this);
+		real_world = new World(gravity,false);
+		real_world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
 		populateLevel();
@@ -260,7 +259,7 @@ public class RocketController extends WorldController implements ContactListener
 		gravity.add(rocket.getLinearVelocity().scl(-0.1f));
 		Vector2 pos_to_center = rocket.getPosition().sub(WorldController.DEFAULT_WIDTH / 2f, WorldController.DEFAULT_HEIGHT / 2f);
 		gravity.add(pos_to_center.scl(0.1f));
-		world.setGravity(gravity);
+		real_world.setGravity(gravity);
 
 		if(InputController.getInstance().didTertiary()){
 			gravity_direction = !gravity_direction;
