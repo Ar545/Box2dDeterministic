@@ -38,19 +38,19 @@ public abstract class SimpleObstacle extends Obstacle {
 	/** The physics body for Box2D drawing. */
 	protected Body draw_body;
 
-//	void SimpleObstacle::syncBodies() {
-//		_drawbody->SetType(_realbody->GetType());
-//		_drawbody->SetTransform(_realbody->GetPosition(), _realbody->GetAngle());
-//		_drawbody->SetEnabled(_realbody->IsEnabled());
-//		_drawbody->SetAwake(_realbody->IsAwake());
-//		_drawbody->SetBullet(_realbody->IsBullet());
-//		_drawbody->SetLinearVelocity(_realbody->GetLinearVelocity());
-//		_drawbody->SetSleepingAllowed(_realbody->IsSleepingAllowed());
-//		_drawbody->SetFixedRotation(_realbody->IsFixedRotation());
-//		_drawbody->SetGravityScale(_realbody->GetGravityScale());
-//		_drawbody->SetAngularDamping(_realbody->GetAngularDamping());
-//		_drawbody->SetLinearDamping(_realbody->GetLinearDamping());
-//	}
+	public void syncBodies() {
+		draw_body.setType(real_body.getType());
+		draw_body.setTransform(real_body.getPosition(), real_body.getAngle());
+//		draw_body.setEnabled(real_body.isEnabled());
+		draw_body.setAwake(real_body.isAwake());
+		draw_body.setBullet(real_body.isBullet());
+		draw_body.setLinearVelocity(real_body.getLinearVelocity());
+		draw_body.setSleepingAllowed(real_body.isSleepingAllowed());
+		draw_body.setFixedRotation(real_body.isFixedRotation());
+		draw_body.setGravityScale(real_body.getGravityScale());
+		draw_body.setAngularDamping(real_body.getAngularDamping());
+		draw_body.setLinearDamping(real_body.getLinearDamping());
+	}
 
 	/** The texture for the shape. */
 	protected TextureRegion texture;
@@ -84,7 +84,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setBodyType(BodyType value) {
 		if (real_body != null) {
 			real_body.setType(value);
-			draw_body.setType(value);
+//			draw_body.setType(value);
 		} else {
 			super.setBodyType(value);
 		}
@@ -113,7 +113,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setPosition(Vector2 value) {
 		if (real_body != null) {
 			real_body.setTransform(value, real_body.getAngle());
-			draw_body.setTransform(value, draw_body.getAngle());
+//			draw_body.setTransform(value, draw_body.getAngle());
 		} else {
 			super.setPosition(value);
 		}
@@ -129,7 +129,7 @@ public abstract class SimpleObstacle extends Obstacle {
 		if (real_body != null) {
 			positionCache.set(x,y);
 			real_body.setTransform(positionCache, real_body.getAngle());
-			draw_body.setTransform(positionCache, draw_body.getAngle());
+//			draw_body.setTransform(positionCache, draw_body.getAngle());
 		} else {
 			super.setPosition(x,y);
 		}
@@ -153,8 +153,8 @@ public abstract class SimpleObstacle extends Obstacle {
 		if (real_body != null) {
 			positionCache.set(value, real_body.getPosition().y);
 			real_body.setTransform(positionCache, real_body.getAngle());
-			positionCache.set(value, draw_body.getPosition().y);
-			draw_body.setTransform(positionCache, draw_body.getAngle());
+//			positionCache.set(value, draw_body.getPosition().y);
+//			draw_body.setTransform(positionCache, draw_body.getAngle());
 		} else {
 			super.setX(value);
 		}
@@ -178,8 +178,8 @@ public abstract class SimpleObstacle extends Obstacle {
 		if (real_body != null) {
 			positionCache.set(real_body.getPosition().x,value);
 			real_body.setTransform(positionCache, real_body.getAngle());
-			positionCache.set(draw_body.getPosition().x,value);
-			draw_body.setTransform(positionCache, draw_body.getAngle());
+//			positionCache.set(draw_body.getPosition().x,value);
+//			draw_body.setTransform(positionCache, draw_body.getAngle());
 		} else {
 			super.setY(value);
 		}
@@ -204,7 +204,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setAngle(float value) {
 		if (real_body != null) {
 			real_body.setTransform(real_body.getPosition(),value);
-			draw_body.setTransform(draw_body.getPosition(),value);
+//			draw_body.setTransform(draw_body.getPosition(),value);
 		} else {
 			super.setAngle(value);
 		}
@@ -233,7 +233,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setLinearVelocity(Vector2 value) {
 		if (real_body != null) {
 			real_body.setLinearVelocity(value);
-			draw_body.setLinearVelocity(value);
+//			draw_body.setLinearVelocity(value);
 		} else {
 			super.setLinearVelocity(value);
 		}
@@ -257,8 +257,8 @@ public abstract class SimpleObstacle extends Obstacle {
 		if (real_body != null) {
 			velocityCache.set(value, real_body.getLinearVelocity().y);
 			real_body.setLinearVelocity(velocityCache);
-			velocityCache.set(value, draw_body.getLinearVelocity().y);
-			draw_body.setLinearVelocity(velocityCache);
+//			velocityCache.set(value, draw_body.getLinearVelocity().y);
+//			draw_body.setLinearVelocity(velocityCache);
 		} else {
 			super.setVX(value);
 		}
@@ -282,8 +282,8 @@ public abstract class SimpleObstacle extends Obstacle {
 		if (real_body != null) {
 			velocityCache.set(real_body.getLinearVelocity().x,value);
 			real_body.setLinearVelocity(velocityCache);
-			velocityCache.set(draw_body.getLinearVelocity().x,value);
-			draw_body.setLinearVelocity(velocityCache);
+//			velocityCache.set(draw_body.getLinearVelocity().x,value);
+//			draw_body.setLinearVelocity(velocityCache);
 		} else {
 			super.setVY(value);
 		}
@@ -308,7 +308,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setAngularVelocity(float value) {
 		if (real_body != null) {
 			real_body.setAngularVelocity(value);
-			draw_body.setAngularVelocity(value);
+//			draw_body.setAngularVelocity(value);
 		} else {
 			super.setAngularVelocity(value);
 		}
@@ -341,7 +341,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setActive(boolean value) {
 		if (real_body != null) {
 			real_body.setActive(value);
-			draw_body.setActive(value);
+//			draw_body.setActive(value);
 		} else {
 			super.setActive(value);
 		}
@@ -374,7 +374,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setAwake(boolean value) {
 		if (real_body != null) {
 			real_body.setAwake(value);
-			draw_body.setAwake(value);
+//			draw_body.setAwake(value);
 		} else {
 			super.setAwake(value);
 		}
@@ -407,7 +407,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setSleepingAllowed(boolean value) {
 		if (real_body != null) {
 			real_body.setSleepingAllowed(value);
-			draw_body.setSleepingAllowed(value);
+//			draw_body.setSleepingAllowed(value);
 		} else {
 			super.setSleepingAllowed(value);
 		}
@@ -452,7 +452,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setBullet(boolean value) {
 		if (real_body != null) {
 			real_body.setBullet(value);
-			draw_body.setBullet(value);
+//			draw_body.setBullet(value);
 		} else {
 			super.setBullet(value);
 		}
@@ -479,7 +479,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setFixedRotation(boolean value) {
 		if (real_body != null) {
 			real_body.setFixedRotation(value);
-			draw_body.setFixedRotation(value);
+//			draw_body.setFixedRotation(value);
 		} else {
 			super.setFixedRotation(value);
 		}
@@ -508,7 +508,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setGravityScale(float value) {
 		if (real_body != null) {
 			real_body.setGravityScale(value);
-			draw_body.setGravityScale(value);
+//			draw_body.setGravityScale(value);
 		} else {
 			super.setGravityScale(value);
 		}
@@ -547,7 +547,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setLinearDamping(float value) {
 		if (real_body != null) {
 			real_body.setLinearDamping(value);
-			draw_body.setLinearDamping(value);
+//			draw_body.setLinearDamping(value);
 		} else {
 			super.setLinearDamping(value);
 		}
@@ -586,7 +586,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public void setAngularDamping(float value) {
 		if (real_body != null) {
 			real_body.setAngularDamping(value);
-			draw_body.setAngularDamping(value);
+//			draw_body.setAngularDamping(value);
 		} else {
 			super.setAngularDamping(value);
 		}
@@ -608,9 +608,9 @@ public abstract class SimpleObstacle extends Obstacle {
 			for(Fixture f : real_body.getFixtureList()) {
 				f.setDensity(value);
 			}
-			for(Fixture f : draw_body.getFixtureList()) {
-				f.setDensity(value);
-			}
+//			for(Fixture f : draw_body.getFixtureList()) {
+//				f.setDensity(value);
+//			}
 		}
 	}
 	
@@ -631,9 +631,9 @@ public abstract class SimpleObstacle extends Obstacle {
 			for(Fixture f : real_body.getFixtureList()) {
 				f.setFriction(value);
 			}
-			for(Fixture f : draw_body.getFixtureList()) {
-				f.setFriction(value);
-			}
+//			for(Fixture f : draw_body.getFixtureList()) {
+//				f.setFriction(value);
+//			}
 		}
 	}
 	
@@ -654,9 +654,9 @@ public abstract class SimpleObstacle extends Obstacle {
 			for(Fixture f : real_body.getFixtureList()) {
 				f.setRestitution(value);
 			}
-			for(Fixture f : draw_body.getFixtureList()) {
-				f.setRestitution(value);
-			}
+//			for(Fixture f : draw_body.getFixtureList()) {
+//				f.setRestitution(value);
+//			}
 		}
 	}
 	
@@ -675,9 +675,9 @@ public abstract class SimpleObstacle extends Obstacle {
 			for(Fixture f : real_body.getFixtureList()) {
 				f.setSensor(value);
 			}
-			for(Fixture f : draw_body.getFixtureList()) {
-				f.setSensor(value);
-			}
+//			for(Fixture f : draw_body.getFixtureList()) {
+//				f.setSensor(value);
+//			}
 		}
 	}
 	
@@ -700,9 +700,9 @@ public abstract class SimpleObstacle extends Obstacle {
 			for(Fixture f : real_body.getFixtureList()) {
 				f.setFilterData(value);
 			}
-			for(Fixture f : draw_body.getFixtureList()) {
-				f.setFilterData(value);
-			}
+//			for(Fixture f : draw_body.getFixtureList()) {
+//				f.setFilterData(value);
+//			}
 		}
 	}
 
@@ -731,7 +731,7 @@ public abstract class SimpleObstacle extends Obstacle {
 		super.setCentroid(value);
 		if (real_body != null) {
 			real_body.setMassData(massdata); // Protected accessor?
-			draw_body.setMassData(massdata); // Protected accessor?
+//			draw_body.setMassData(massdata); // Protected accessor?
 		}
 	}
 	
@@ -759,7 +759,7 @@ public abstract class SimpleObstacle extends Obstacle {
 		super.setInertia(value);
 		if (real_body != null) {
 			real_body.setMassData(massdata); // Protected accessor?
-			draw_body.setMassData(massdata); // Protected accessor?
+//			draw_body.setMassData(massdata); // Protected accessor?
 		}
 	}
 	
@@ -785,7 +785,7 @@ public abstract class SimpleObstacle extends Obstacle {
 		super.setMass(value);
 		if (real_body != null) {
 			real_body.setMassData(massdata); // Protected accessor?
-			draw_body.setMassData(massdata); // Protected accessor?
+//			draw_body.setMassData(massdata); // Protected accessor?
 		}
 	}
 	
@@ -796,7 +796,7 @@ public abstract class SimpleObstacle extends Obstacle {
 		super.resetMass();
 		if (real_body != null) {
 			real_body.resetMassData();
-			draw_body.resetMassData();
+//			draw_body.resetMassData();
 		}
 	}
 	

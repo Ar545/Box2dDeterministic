@@ -443,6 +443,9 @@ public abstract class WorldController implements Screen {
 //				if (it.second->getLinearVelocity().length() > _minSpeed * (_time / _maxTime)) {
 //					stopped = false;
 //				}
+				if(it.getLinearVelocity().len() > minSpeed * (time / maxTime)){
+					stopped = false;
+				}
 			}
 		}
 		time += ministep;
@@ -513,6 +516,7 @@ public abstract class WorldController implements Screen {
 //					it.second->setLinearVelocity(Vec2::ZERO);
 					it.setLinearVelocity(new Vector2(0, 0));
 //					it.second->syncBodies();
+					it.syncBodies();
 				}
 				return;
 			}
@@ -524,6 +528,7 @@ public abstract class WorldController implements Screen {
 		// Sync real body to draw body
 		for (Obstacle it : objects) {
 //			it.second->syncBodies();
+			it.syncBodies();
 //			it.second->updatePhysics(_remainingtime, ministep, false);
 		}
 		// Step the draw world by the remaining time
@@ -532,7 +537,8 @@ public abstract class WorldController implements Screen {
 		// Post process all objects after physics (this updates graphics)
 		for(Obstacle it : objects) {
 //			Obstacle* obj = it.second.get();
-//			obj->update(totalsimtime);
+// 			obj->update(totalsimtime);
+			it.update(totalsimtime);
 		}
 
 		// Garbage collect the deleted objects.

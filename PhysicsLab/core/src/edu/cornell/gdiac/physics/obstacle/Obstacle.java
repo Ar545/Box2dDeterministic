@@ -1000,4 +1000,6 @@ public abstract class Obstacle {
 	 */
 	public abstract void drawDebug(GameCanvas canvas);
 
+	/** TODO: implement this for complex obstacles */
+	public void syncBodies() {}
 }
