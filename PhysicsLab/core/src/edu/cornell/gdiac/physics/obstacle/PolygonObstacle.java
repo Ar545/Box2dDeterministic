@@ -290,7 +290,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	 * This is the primary method to override for custom physics objects
 	 */
 	protected void createFixtures() {
-		if (body == null) {
+		if (real_body == null) {
 			return;
 		}
 		
@@ -299,7 +299,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		// Create the fixtures
 		for(int ii = 0; ii < shapes.length; ii++) {
 			fixture.shape = shapes[ii];
-			geoms[ii] = body.createFixture(fixture);
+			geoms[ii] = real_body.createFixture(fixture);
 		}
 		markDirty(false);
 	}
@@ -312,7 +312,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	protected void releaseFixtures() {
 		if (geoms[0] != null) {
 			for(Fixture fix : geoms) {
-				body.destroyFixture(fix);
+				real_body.destroyFixture(fix);
 			}
 		}
 	}

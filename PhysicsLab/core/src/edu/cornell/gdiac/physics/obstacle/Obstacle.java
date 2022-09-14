@@ -829,7 +829,7 @@ public abstract class Obstacle {
 	 *
 	 * @return the Box2D body for this object.
 	 */
-	public Body getBody() {
+	public Body getReal_body() {
 		return null;
 	}
 	
@@ -961,7 +961,7 @@ public abstract class Obstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	public abstract boolean activatePhysics(World world);
+	public abstract boolean activatePhysics(World world, World drawWorld);
 
 	/**
 	 * Destroys the physics Body(s) of this object if applicable,
@@ -969,7 +969,7 @@ public abstract class Obstacle {
 	 * 
 	 * @param world Box2D world that stores body
 	 */
-	public abstract void deactivatePhysics(World world);
+	public abstract void deactivatePhysics(World world, World drawWorld);
 
 	/**
 	 * Updates the object's physics state (NOT GAME LOGIC).

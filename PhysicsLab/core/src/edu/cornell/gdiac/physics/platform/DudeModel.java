@@ -272,7 +272,7 @@ public class DudeModel extends CapsuleObstacle {
 		sensorDef.shape = sensorShape;
 
 		// Ground sensor to represent our feet
-		Fixture sensorFixture = body.createFixture( sensorDef );
+		Fixture sensorFixture = real_body.createFixture( sensorDef );
 		sensorFixture.setUserData(getSensorName());
 		
 		return true;
@@ -292,7 +292,7 @@ public class DudeModel extends CapsuleObstacle {
 		// Don't want to be moving. Damp out player motion
 		if (getMovement() == 0f) {
 			forceCache.set(-getDamping()*getVX(),0);
-			body.applyForce(forceCache,getPosition(),true);
+			real_body.applyForce(forceCache,getPosition(),true);
 		}
 		
 		// Velocity too high, clamp it
@@ -300,13 +300,13 @@ public class DudeModel extends CapsuleObstacle {
 			setVX(Math.signum(getVX())*getMaxSpeed());
 		} else {
 			forceCache.set(getMovement(),0);
-			body.applyForce(forceCache,getPosition(),true);
+			real_body.applyForce(forceCache,getPosition(),true);
 		}
 
 		// Jump!
 		if (isJumping()) {
 			forceCache.set(0, jump_force);
-			body.applyLinearImpulse(forceCache,getPosition(),true);
+			real_body.applyLinearImpulse(forceCache,getPosition(),true);
 		}
 	}
 	

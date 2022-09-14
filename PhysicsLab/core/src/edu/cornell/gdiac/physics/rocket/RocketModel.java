@@ -197,7 +197,7 @@ public class RocketModel extends BoxObstacle {
 		
 		//#region INSERT CODE HERE
 		// Insert code here to prevent the body from rotating
-		body.setFixedRotation(true);
+		real_body.setFixedRotation(true);
 		//#endregion
 		
 		return true;
@@ -221,7 +221,7 @@ public class RocketModel extends BoxObstacle {
 		//#region INSERT CODE HERE
 		// Apply force to the rocket BODY, not the rocket
 
-		body.applyForce(getForce(), getPosition(), true);
+		real_body.applyForce(getForce(), getPosition(), true);
 
 		//#endregion
 	}

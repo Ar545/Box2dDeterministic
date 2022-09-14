@@ -306,8 +306,8 @@ public class RagdollModel extends ComplexObstacle {
 		
 		// Weld the bubbler to this mask
 		WeldJointDef weldDef = new WeldJointDef();
-		weldDef.bodyA = bodies.get(PART_HEAD).getBody();
-		weldDef.bodyB = bubbler.getBody();
+		weldDef.bodyA = bodies.get(PART_HEAD).getReal_body();
+		weldDef.bodyB = bubbler.getReal_body();
 		weldDef.localAnchorA.set(bubbler.getOffset());
 		weldDef.localAnchorB.set(0,0);
 		Joint wjoint = world.createJoint(weldDef);
@@ -327,8 +327,8 @@ public class RagdollModel extends ComplexObstacle {
 		RevoluteJointDef loopJointDef = new RevoluteJointDef();
 
 		// Initial joint
-		loopJointDef.bodyA = bodies.get(partA).getBody();
-		loopJointDef.bodyB = bodies.get(partB).getBody();
+		loopJointDef.bodyA = bodies.get(partA).getReal_body();
+		loopJointDef.bodyB = bodies.get(partB).getReal_body();
 		loopJointDef.localAnchorA.set(new Vector2(xA, yA));
 		loopJointDef.localAnchorB.set(new Vector2(xB, yB));
 		loopJointDef.lowerAngle = -1.55f;

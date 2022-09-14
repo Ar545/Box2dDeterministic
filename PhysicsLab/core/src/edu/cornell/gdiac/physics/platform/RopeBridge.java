@@ -131,8 +131,8 @@ public class RopeBridge extends ComplexObstacle {
 		RevoluteJointDef jointDef = new RevoluteJointDef();
 
 		// Initial joint
-		jointDef.bodyA = start.getBody();
-		jointDef.bodyB = bodies.get(0).getBody();
+		jointDef.bodyA = start.getReal_body();
+		jointDef.bodyB = bodies.get(0).getReal_body();
 		jointDef.localAnchorA.set(anchor1);
 		jointDef.localAnchorB.set(anchor2);
 		jointDef.collideConnected = false;
@@ -149,8 +149,8 @@ public class RopeBridge extends ComplexObstacle {
 			RevoluteJointDef loopJointDef = new RevoluteJointDef();
 
 			// Initial joint
-			loopJointDef.bodyA = bodies.get(ii).getBody();
-			loopJointDef.bodyB = bodies.get(ii + 1).getBody();
+			loopJointDef.bodyA = bodies.get(ii).getReal_body();
+			loopJointDef.bodyB = bodies.get(ii + 1).getReal_body();
 			loopJointDef.localAnchorA.set(anchor1);
 			loopJointDef.localAnchorB.set(anchor2);
 			loopJointDef.collideConnected = false;
@@ -173,8 +173,8 @@ public class RopeBridge extends ComplexObstacle {
 
 		// Final joint
 		anchor2.x = 0;
-		jointDef.bodyA = last.getBody();
-		jointDef.bodyB = finish.getBody();
+		jointDef.bodyA = last.getReal_body();
+		jointDef.bodyB = finish.getReal_body();
 		jointDef.localAnchorA.set(anchor1);
 		jointDef.localAnchorB.set(anchor2);
 		joint = world.createJoint(jointDef);

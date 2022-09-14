@@ -96,8 +96,8 @@ public class Spinner extends ComplexObstacle {
 		RevoluteJointDef jointDef = new RevoluteJointDef();
 
 		// Initial joint
-		jointDef.bodyA = barrier.getBody();
-		jointDef.bodyB = pin.getBody();
+		jointDef.bodyA = barrier.getReal_body();
+		jointDef.bodyB = pin.getReal_body();
 		jointDef.localAnchorA.set(anchor1);
 		jointDef.localAnchorB.set(anchor2);
 		jointDef.collideConnected = false;

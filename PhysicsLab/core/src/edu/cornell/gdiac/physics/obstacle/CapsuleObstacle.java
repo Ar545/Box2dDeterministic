@@ -374,12 +374,12 @@ public class CapsuleObstacle extends SimpleObstacle {
 	 */
 	public void setDensity(float value) {
 	    fixture.density = value;
-	    if (body != null) {
+	    if (real_body != null) {
 	        core.setDensity(value);
 	        cap1.setDensity(value/2.0f);
 	        cap2.setDensity(value/2.0f);
 	        if (!masseffect) {
-	            body.resetMassData();
+	            real_body.resetMassData();
 	        }
 	    }
 	}
@@ -390,7 +390,7 @@ public class CapsuleObstacle extends SimpleObstacle {
 	 * This is the primary method to override for custom physics objects
 	 */
 	protected void createFixtures() {
-		if (body == null) {
+		if (real_body == null) {
 			return;
 		}
 		    
@@ -398,7 +398,7 @@ public class CapsuleObstacle extends SimpleObstacle {
 		    
 		// Create the fixture
 		fixture.shape = shape;
-		core = body.createFixture(fixture);
+		core = real_body.createFixture(fixture);
 		    
 		fixture.density = fixture.density/2.0f;
 		posCache.set(0,0);
@@ -407,49 +407,49 @@ public class CapsuleObstacle extends SimpleObstacle {
 			posCache.y = center.y+center.height;
 			end1.setPosition(posCache);
 			fixture.shape = end1;
-			cap1 = body.createFixture(fixture);
+			cap1 = real_body.createFixture(fixture);
 			cap2 = null;
 			break;
 		case VERTICAL:
 			posCache.y = center.y+center.height;
 			end1.setPosition(posCache);
 			fixture.shape = end1;
-			cap1 = body.createFixture(fixture);
+			cap1 = real_body.createFixture(fixture);
 			posCache.y = center.y;
 			end2.setPosition(posCache);
 			fixture.shape = end2;
-			cap2 = body.createFixture(fixture);
+			cap2 = real_body.createFixture(fixture);
 			break;
 		case BOTTOM:
 			cap1 = null;
 			posCache.y = center.y;
 			end2.setPosition(posCache);
 			fixture.shape = end2;
-			cap2 = body.createFixture(fixture);
+			cap2 = real_body.createFixture(fixture);
 			break;
 		case LEFT:
 			posCache.x = center.x;
 			end1.setPosition(posCache);
 			fixture.shape = end1;
-			cap1 = body.createFixture(fixture);
+			cap1 = real_body.createFixture(fixture);
 			cap2 = null;		
 			break;
 		case HORIZONTAL:
 			posCache.x = center.x;
 			end1.setPosition(posCache);
 			fixture.shape = end1;
-			cap1 = body.createFixture(fixture);
+			cap1 = real_body.createFixture(fixture);
 			posCache.x = center.x+center.width;
 			end2.setPosition(posCache);
 			fixture.shape = end2;
-			cap2 = body.createFixture(fixture);
+			cap2 = real_body.createFixture(fixture);
 			break;
 		case RIGHT:
 			cap1 = null;
 			posCache.x = center.x+center.width;
 			end2.setPosition(posCache);
 			fixture.shape = end2;
-			cap2 = body.createFixture(fixture);
+			cap2 = real_body.createFixture(fixture);
 			break;
 		}
 
@@ -463,15 +463,15 @@ public class CapsuleObstacle extends SimpleObstacle {
 	 */
 	protected void releaseFixtures() {
 	    if (core != null) {
-	        body.destroyFixture(core);
+	        real_body.destroyFixture(core);
 	        core = null;
 	    }
 	    if (cap1 != null) {
-	        body.destroyFixture(cap1);
+	        real_body.destroyFixture(cap1);
 	        cap1 = null;
 	    }
 	    if (cap2 != null) {
-	        body.destroyFixture(cap2);
+	        real_body.destroyFixture(cap2);
 	        cap2 = null;
 	    }
 	}

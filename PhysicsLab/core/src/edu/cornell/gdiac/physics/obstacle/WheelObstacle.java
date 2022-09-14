@@ -82,7 +82,7 @@ public class WheelObstacle extends SimpleObstacle {
 	 * This is the primary method to override for custom physics objects
 	 */
 	protected void createFixtures() {
-		if (body == null) {
+		if (real_body == null) {
 			return;
 		}
 		
@@ -90,7 +90,7 @@ public class WheelObstacle extends SimpleObstacle {
 		
 		// Create the fixture
 		fixture.shape = shape;
-		geometry = body.createFixture(fixture);
+		geometry = real_body.createFixture(fixture);
 		markDirty(false);
 	}
 	
@@ -101,7 +101,7 @@ public class WheelObstacle extends SimpleObstacle {
 	 */
 	protected void releaseFixtures() {
 	    if (geometry != null) {
-	        body.destroyFixture(geometry);
+	        real_body.destroyFixture(geometry);
 	        geometry = null;
 	    }
 	}

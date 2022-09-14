@@ -902,8 +902,8 @@ public abstract class ComplexObstacle extends Obstacle {
 	 *
 	 * @return the Box2D body for this object.
 	 */
-	public Body getBody() {
-		return (bodies.size > 0 ? bodies.get(0).getBody() : null);
+	public Body getReal_body() {
+		return (bodies.size > 0 ? bodies.get(0).getReal_body() : null);
 	}
 	
 	/** 
@@ -963,19 +963,19 @@ public abstract class ComplexObstacle extends Obstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	public boolean activatePhysics(World world) {
+	public boolean activatePhysics(World world, World drawWorld) {
 		bodyinfo.active = true;
 		boolean success = true;
 	
 		// Create all other bodies.
 		for(Obstacle obj : bodies) {
-			success = success && obj.activatePhysics(world);
+			success = success && obj.activatePhysics(world, drawWorld);
 		}
 		success = success && createJoints(world);
 		
 		// Clean up if we failed
 		if (!success) {
-			deactivatePhysics(world);
+			deactivatePhysics(world, drawWorld);
 		}
 		return success;
 	}
@@ -986,7 +986,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 * 
 	 * @param world Box2D world that stores body
 	 */
-	public void deactivatePhysics(World world) {
+	public void deactivatePhysics(World world, World drawWorld) {
 		if (bodyinfo.active) {
 			// Should be good for most (simple) applications.
 			for (Joint joint : joints) {
@@ -994,7 +994,7 @@ public abstract class ComplexObstacle extends Obstacle {
 			}
 			joints.clear();
 			for (Obstacle obj : bodies) {
-				obj.deactivatePhysics(world);
+				obj.deactivatePhysics(world, drawWorld);
 			}
 			bodyinfo.active = false;
 		}
@@ -1020,7 +1020,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) {
 		// Delegate to components

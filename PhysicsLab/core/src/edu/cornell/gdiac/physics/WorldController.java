@@ -62,9 +62,11 @@ public abstract class WorldController implements Screen {
 	/** The amount of time for a physics engine step. */
 	public static final float WORLD_STEP = 1/60.0f;
 	/** Number of velocity iterations for the constrain solvers */
-	public static final int WORLD_VELOC = 6;
+	public static final int WORLD_VELOC = 3;
 	/** Number of position iterations for the constrain solvers */
 	public static final int WORLD_POSIT = 2;
+	/** Default number of splits in our time step */
+	public static final int DEFAULT_SPLITS = 10;
 	
 	/** Width of the game world in Box2d units */
 	protected static final float DEFAULT_WIDTH  = 32.0f;
@@ -85,20 +87,27 @@ public abstract class WorldController implements Screen {
 
 	/** The Box2D world */
 	protected World real_world;
-	/** The Box2D world */
+	/** The Box2D draw world */
 	protected World draw_world;
+	/** The amount of time passed during the current turn */
+	float time;
+	/** The minimum speed of physics objects to stop the simulation */
+	float minSpeed;
+	/** The maximum time for a turn until simulation is forcibly paused */
+	float maxTime;
+
 	/** The boundary of the world */
 	protected Rectangle bounds;
 	/** The world scale */
 	protected Vector2 scale;
 	
-	/** Whether or not this is an active controller */
+	/** Whether this is an active controller */
 	private boolean active;
 	/** Whether we have completed this level */
 	private boolean complete;
 	/** Whether we have failed at this world (and need a reset) */
 	private boolean failed;
-	/** Whether or not debug mode is active */
+	/** Whether debug mode is active */
 	private boolean debug;
 	/** Countdown active for winning or losing */
 	private int countdown;
@@ -248,6 +257,10 @@ public abstract class WorldController implements Screen {
 	 */
 	protected WorldController(Rectangle bounds, Vector2 gravity) {
 		real_world = new World(gravity,false);
+		draw_world = new World(gravity,false);
+		time = 0;
+		maxTime = 60;
+		minSpeed = 2;
 		this.bounds = new Rectangle(bounds);
 		this.scale = new Vector2(1,1);
 		complete = false;
@@ -262,16 +275,18 @@ public abstract class WorldController implements Screen {
 	 */
 	public void dispose() {
 		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(real_world);
+			obj.deactivatePhysics(real_world, draw_world);
 		}
 		objects.clear();
 		addQueue.clear();
 		real_world.dispose();
+		draw_world.dispose();
 		objects = null;
 		addQueue = null;
 		bounds = null;
 		scale  = null;
 		real_world = null;
+		draw_world = null;
 		canvas = null;
 	}
 
@@ -312,7 +327,7 @@ public abstract class WorldController implements Screen {
 	protected void addObject(Obstacle obj) {
 		assert inBounds(obj) : "Object is not in bounds";
 		objects.add(obj);
-		obj.activatePhysics(real_world);
+		obj.activatePhysics(real_world, draw_world);
 	}
 
 	/**
@@ -406,33 +421,31 @@ public abstract class WorldController implements Screen {
 
 
 	/** The amount of time for a single engine step */
-	float stepssize;
-
+	float stepssize = WORLD_STEP;
 	/** The amount of times to split up our steps */
-	int stepsplits;
-
-	/** The left over time that needs to be iterated for next frame */
-	float remainingtime;
-	/** The number of velocity iterations for the constrain solvers per ministep */
-	int obstacle_velocity;
-	/** The number of position iterations for the constrain solvers per ministep*/
-	int obstacle_position;
-	/** Whether or not the simulation has been forcefully stopped */
-	boolean stopped;
+	int stepsplits = DEFAULT_SPLITS;
+	/** The leftover time that needs to be iterated for next frame */
+	float remainingtime = 0;
+	/** The number of velocity iterations for the constraint solvers per mini-step */
+	int obstacle_velocity = WORLD_VELOC;
+	/** The number of position iterations for the constraint solvers per mini-step*/
+	int obstacle_position = WORLD_POSIT;
+	/** Whether the simulation has been forcefully stopped */
+	boolean stopped = false;
 
 	/** Checks if we should stop the physics world or not */
 	void checkStop(float ministep) {
-//		if (_time > _maxTime / 10) {
-//			_stopped = true;
-//			// Check each obstacle; if any are above the min speed, then keep simulating.
-//			for (auto it : _objects) {
-//				// This scales the _minSpeed value up to its max value as _time nears _maxTime
+		if (time > maxTime / 10) {
+			stopped = true;
+			// Check each obstacle; if any are above the min speed, then keep simulating.
+			for (Obstacle it : objects) {
+				// This scales the _minSpeed value up to its max value as _time nears _maxTime
 //				if (it.second->getLinearVelocity().length() > _minSpeed * (_time / _maxTime)) {
-//					_stopped = false;
+//					stopped = false;
 //				}
-//			}
-//		}
-//		_time += ministep;
+			}
+		}
+		time += ministep;
 	}
 	
 	/**
@@ -494,10 +507,11 @@ public abstract class WorldController implements Screen {
         }*/
 			checkStop(ministep);
 			if (stopped) {
-//				_time = 0;
+				time = 0;
 				remainingtime = 0;
 				for (Obstacle it : objects) {
 //					it.second->setLinearVelocity(Vec2::ZERO);
+					it.setLinearVelocity(new Vector2(0, 0));
 //					it.second->syncBodies();
 				}
 				return;
@@ -529,7 +543,7 @@ public abstract class WorldController implements Screen {
 			PooledList<Obstacle>.Entry entry = iterator.next();
 			Obstacle obj = entry.getValue();
 			if (obj.isRemoved()) {
-				obj.deactivatePhysics(real_world);
+				obj.deactivatePhysics(real_world, draw_world);
 				entry.remove();
 			} else {
 				// Note that update is called last!
