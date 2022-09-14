@@ -189,9 +189,9 @@ public class RocketModel extends BoxObstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	public boolean activatePhysics(World world) {
+	public boolean activatePhysics(World world, World drawWorld) {
 		// Get the box body from our parent class
-		if (!super.activatePhysics(world)) {
+		if (!super.activatePhysics(world, drawWorld)) {
 			return false;
 		}
 		

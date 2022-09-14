@@ -110,7 +110,7 @@ public class RopeBridge extends ComplexObstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	protected boolean createJoints(World world) {
+	protected boolean createJoints(World world, World drawWorld) {
 		assert bodies.size > 0;
 		
 		Vector2 anchor1 = new Vector2(); 
@@ -125,7 +125,7 @@ public class RopeBridge extends ComplexObstacle {
 		start.setName("pin0");
 		start.setDensity(data.getFloat("density", 0));
 		start.setBodyType(BodyDef.BodyType.StaticBody);
-		start.activatePhysics(world);
+		start.activatePhysics(world, drawWorld);
 
 		// Definition for a revolute joint
 		RevoluteJointDef jointDef = new RevoluteJointDef();
@@ -169,7 +169,7 @@ public class RopeBridge extends ComplexObstacle {
 		finish.setName("pin1");
 		finish.setDensity(data.getFloat("density", 0));
 		finish.setBodyType(BodyDef.BodyType.StaticBody);
-		finish.activatePhysics(world);
+		finish.activatePhysics(world, drawWorld);
 
 		// Final joint
 		anchor2.x = 0;
@@ -189,13 +189,13 @@ public class RopeBridge extends ComplexObstacle {
 	 * 
 	 * @param world Box2D world that stores body
 	 */
-	public void deactivatePhysics(World world) {
-		super.deactivatePhysics(world);
+	public void deactivatePhysics(World world, World drawWorld) {
+		super.deactivatePhysics(world, drawWorld);
 		if (start != null) {
-			start.deactivatePhysics(world);
+			start.deactivatePhysics(world, drawWorld);
 		}
 		if (finish != null) {
-			finish.deactivatePhysics(world);
+			finish.deactivatePhysics(world, drawWorld);
 		}
 	}
 	

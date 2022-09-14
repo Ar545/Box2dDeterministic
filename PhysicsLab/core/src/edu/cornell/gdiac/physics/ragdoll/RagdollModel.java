@@ -287,7 +287,7 @@ public class RagdollModel extends ComplexObstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	protected boolean createJoints(World world) {
+	protected boolean createJoints(World world, World drawWorld) {
 		assert bodies.size > 0;
 
 		//#region INSERT CODE HERE

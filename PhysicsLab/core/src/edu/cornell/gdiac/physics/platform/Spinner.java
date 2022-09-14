@@ -79,7 +79,7 @@ public class Spinner extends ComplexObstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	protected boolean createJoints(World world) {
+	protected boolean createJoints(World world, World drawWorld) {
 		assert bodies.size > 0;
 
 		//#region INSERT CODE HERE
@@ -89,7 +89,7 @@ public class Spinner extends ComplexObstacle {
 
 //		Obstacle pin = bodies.get(0);
 		pin.setBodyType(BodyDef.BodyType.StaticBody);
-		pin.activatePhysics(world);
+		pin.activatePhysics(world, drawWorld);
 
 
 		// Definition for a revolute joint

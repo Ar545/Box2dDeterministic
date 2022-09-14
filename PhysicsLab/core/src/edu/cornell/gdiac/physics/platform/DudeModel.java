@@ -247,9 +247,9 @@ public class DudeModel extends CapsuleObstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	public boolean activatePhysics(World world) {
+	public boolean activatePhysics(World world, World drawWorld) {
 		// create the box from our superclass
-		if (!super.activatePhysics(world)) {
+		if (!super.activatePhysics(world, drawWorld)) {
 			return false;
 		}
 

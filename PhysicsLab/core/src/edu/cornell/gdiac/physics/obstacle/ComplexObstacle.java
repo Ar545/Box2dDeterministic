@@ -971,7 +971,7 @@ public abstract class ComplexObstacle extends Obstacle {
 		for(Obstacle obj : bodies) {
 			success = success && obj.activatePhysics(world, drawWorld);
 		}
-		success = success && createJoints(world);
+		success = success && createJoints(world, drawWorld);
 		
 		// Clean up if we failed
 		if (!success) {
@@ -1010,7 +1010,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	protected abstract boolean createJoints(World world);
+	protected abstract boolean createJoints(World world, World drawWorld);
 
 	/**
 	 * Updates the object's physics state (NOT GAME LOGIC).

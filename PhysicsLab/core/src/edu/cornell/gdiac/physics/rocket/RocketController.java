@@ -122,7 +122,7 @@ public class RocketController extends WorldController implements ContactListener
 		Vector2 gravity = new Vector2(real_world.getGravity() );
 		
 		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(real_world);
+			obj.deactivatePhysics(real_world, draw_world);
 		}
 		objects.clear();
 		addQueue.clear();
