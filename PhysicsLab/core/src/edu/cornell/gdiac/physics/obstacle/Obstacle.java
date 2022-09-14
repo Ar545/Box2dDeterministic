@@ -1002,4 +1002,7 @@ public abstract class Obstacle {
 
 	/** TODO: implement this for complex obstacles */
 	public void syncBodies() {}
+
+	public void updatePhysics(float dt, float timestep, boolean real) {
+	}
 }

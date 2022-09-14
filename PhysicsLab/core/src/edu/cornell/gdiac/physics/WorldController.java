@@ -479,7 +479,7 @@ public abstract class WorldController implements Screen {
 		float totalsimtime = remainingtime + dt;
 		while (totaltime > ministep) {
 			for (Obstacle it : objects) {
-//				it.second.updatePhysics(ministep, ministep, true);
+				it.updatePhysics(ministep, ministep, true);
 			}
 			real_world.step(ministep, obstacle_velocity, obstacle_position);
         /*if (_writer) {
@@ -513,9 +513,7 @@ public abstract class WorldController implements Screen {
 				time = 0;
 				remainingtime = 0;
 				for (Obstacle it : objects) {
-//					it.second->setLinearVelocity(Vec2::ZERO);
 					it.setLinearVelocity(new Vector2(0, 0));
-//					it.second->syncBodies();
 					it.syncBodies();
 				}
 				return;
@@ -527,17 +525,14 @@ public abstract class WorldController implements Screen {
 		remainingtime = totaltime;
 		// Sync real body to draw body
 		for (Obstacle it : objects) {
-//			it.second->syncBodies();
 			it.syncBodies();
-//			it.second->updatePhysics(_remainingtime, ministep, false);
+			it.updatePhysics(remainingtime, ministep, false);
 		}
 		// Step the draw world by the remaining time
 		draw_world.step(remainingtime, obstacle_velocity, obstacle_position);
 
 		// Post process all objects after physics (this updates graphics)
 		for(Obstacle it : objects) {
-//			Obstacle* obj = it.second.get();
-// 			obj->update(totalsimtime);
 			it.update(totalsimtime);
 		}
 
