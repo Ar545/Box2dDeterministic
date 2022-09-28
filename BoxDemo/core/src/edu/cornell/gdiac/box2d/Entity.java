@@ -337,6 +337,16 @@ public abstract class Entity {
 	}
 
 	/**
+	 * Draws the physics object.
+	 *
+	 * @param canvas The drawing context
+	 */
+	public void draw(GameCanvas canvas, float offset) {
+		// TO DO: Check units
+		canvas.draw(poly, color, draw_body.getPosition().x + offset, draw_body.getPosition().y, draw_body.getAngle());
+	}
+
+	/**
      * Create the collision shape information
      *
      * @param size The object bounding box
