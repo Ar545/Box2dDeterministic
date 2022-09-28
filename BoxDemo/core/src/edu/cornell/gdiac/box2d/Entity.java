@@ -360,4 +360,15 @@ public abstract class Entity {
      */
 	protected abstract void makeGraphics(Vector2 size);
 
+	/** Gravity is proportional to one over radius squared */
+	public void updateAttractionForce(Entity barrier) {
+		Vector2 directedForce = barrier.getPosition().cpy().sub(this.getPosition());
+		float radius = directedForce.len();
+		directedForce.nor().scl(1/(radius * radius));
+		this.body.applyForceToCenter(directedForce, true);
+//		restitution
+	}
+
+//	protected abstract void updatePhysics();
+
 }

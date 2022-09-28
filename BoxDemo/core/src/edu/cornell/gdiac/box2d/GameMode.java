@@ -111,13 +111,17 @@ public class GameMode implements Screen, ContactListener {
 		rightController.dispose();
 	}
 
+	float delta_cache = 0.015f;
+
 	public void update(float delta){
 		inputController.readInput();
+
 
 		// Process all the settings (density, friction, etc.) changes
 		changeSettings();
 		leftController.update(delta, inputController);
-		rightController.update(delta, inputController);
+		rightController.update(delta_cache, inputController);
+		delta_cache = delta;
 	}
 
 	/**

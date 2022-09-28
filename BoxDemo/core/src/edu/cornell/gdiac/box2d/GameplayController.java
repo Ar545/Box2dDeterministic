@@ -95,13 +95,13 @@ public class GameplayController {
     /** Object friction (array, so we can use as a reference variable) */
     private float[] friction = { 0.1f };
     /** Object restitution (array, so we can use as a reference variable) */
-    private float[] restitution = { 0.0f };
+    private float[] restitution = { 1.0f };
 
     // To try out new shape classes, add them here.
     /** The list of shape classes */
     private Class[] shapeTypes = { Box.class, Triangle.class, Circle.class, Ellipse.class };
     /** The current active shape */
-    private int shape = 0;
+    private int shape = 3;
 
 
     Vector2 size;
@@ -257,9 +257,10 @@ public class GameplayController {
         // The total sim time (needed for obj->update)
 //		final float totalSimTime = remainingTime + dt;
         while (totalTime > miniStep) {
-//			for (Entity e : objects) {
-//				e.updatePhysics(miniStep, miniStep, true);
-//			}
+			for (Entity e : objects) {
+//				e.updatePhysics();
+			}
+            avatar.updateAttractionForce(barrier);
             world.step(miniStep, obstacle_velocity, obstacle_position);
             totalTime -= miniStep;
         }
@@ -269,8 +270,9 @@ public class GameplayController {
         // Sync real body to draw body
         for (Entity e : objects) {
             e.syncBodies();
-//			e.updatePhysics(remainingTime, miniStep, false);
+//			e.updatePhysics();
         }
+        avatar.updateAttractionForce(barrier);
         // Step the draw world by the remaining time
         draw_world.step(remainingTime, obstacle_velocity, obstacle_position);
 
@@ -400,7 +402,7 @@ public class GameplayController {
 
 
         // Lots of magic numbers here.  Bad programming style. Don't do this.
-        Vector2 size = new Vector2 (canvas.getWidth()/canvas.getSX(), canvas.getHeight()/canvas.getSY());
+        Vector2 size = new Vector2 (canvas.getWidth()/(canvas.getSX() * 2), canvas.getHeight()/canvas.getSY());
         canvas.drawText(shape, theFont, LEFT_OFFSET, size.y-TOP_OFFSET);
         canvas.drawText(version, theFont, size.x-RIGHT_OFFSET, size.y-TOP_OFFSET);
         canvas.drawText(dense, theFont, LEFT_OFFSET, BOT_OFFSET);
