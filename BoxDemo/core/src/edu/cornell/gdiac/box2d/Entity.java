@@ -31,11 +31,26 @@ public abstract class Entity {
 	// The Box2D information
 	/** The physics body (MOVEMENT) */
 	protected Body body;
+	/** The physics body for Box2D drawing. */
+	protected Body draw_body;
+	public void syncBodies() {
+		draw_body.setType(body.getType());
+		draw_body.setTransform(body.getPosition(), body.getAngle());
+//		draw_body.setEnabled(body.isEnabled());
+		draw_body.setAwake(body.isAwake());
+		draw_body.setBullet(body.isBullet());
+		draw_body.setLinearVelocity(body.getLinearVelocity());
+		draw_body.setSleepingAllowed(body.isSleepingAllowed());
+		draw_body.setFixedRotation(body.isFixedRotation());
+		draw_body.setGravityScale(body.getGravityScale());
+		draw_body.setAngularDamping(body.getAngularDamping());
+		draw_body.setLinearDamping(body.getLinearDamping());
+	}
 	/** The physics geometry (collisions) */
 	protected Fixture fixture;
 	/** The size (width and height) of the bounding box */
 	protected Vector2 size;
-	/** Whether or not this is a static object */
+	/** Whether this is a static object */
 	protected boolean isStatic;
 
 	// The drawing information
@@ -275,6 +290,7 @@ public abstract class Entity {
 	protected Entity() { 
 		// No physics until we initialize
 		body = null;
+		draw_body = null;
 		fixture = null;
 
 		// Set the default values
@@ -294,7 +310,7 @@ public abstract class Entity {
  	 * @param world The physics world
  	 * @param size  The size of the bounding box
  	 */
-	public void initialize(World world, Vector2 size) {
+	public void initialize(World world, World drawWorld, Vector2 size) {
 		// Make a body, if possible
 		BodyDef def = new BodyDef();
 		def.type = (isStatic ? BodyType.StaticBody : BodyType.DynamicBody);
@@ -302,6 +318,9 @@ public abstract class Entity {
 
 		body = world.createBody(def);
 		body.setUserData(this);
+
+		draw_body = drawWorld.createBody(def);
+		draw_body.setUserData(this); // TODO:
 		
 		makeFixture(size);
 		makeGraphics(size);
@@ -314,7 +333,7 @@ public abstract class Entity {
      */
 	public void draw(GameCanvas canvas) {
 		// TO DO: Check units
-		canvas.draw(poly, color, body.getPosition().x, body.getPosition().y,body.getAngle());
+		canvas.draw(poly, color, draw_body.getPosition().x, draw_body.getPosition().y, draw_body.getAngle());
 	}
 
 	/**

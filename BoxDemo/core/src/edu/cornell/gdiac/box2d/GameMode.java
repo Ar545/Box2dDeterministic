@@ -12,22 +12,22 @@ package edu.cornell.gdiac.box2d;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.box2d.shape.*;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * The primary controller class for the game.
- *
- * While GDXRoot is the root class, it delegates all of the work to the player mode
+ * While GDXRoot is the root class, it delegates all the work to the player mode
  * classes. This is the player mode class for running the game. In initializes all 
- * of the other classes in the game and hooks them together.  It also provides the
+ * the other classes in the game and hooks them together.  It also provides the
  * basic game loop (update-draw).
  */
 public class GameMode implements Screen, ContactListener {
@@ -73,11 +73,11 @@ public class GameMode implements Screen, ContactListener {
 	public static final float TOP_OFFSET   = 0.25f;
 	public static final float BOT_OFFSET   = 0.2f;
 	
-	/** The amount of time for a physics engine step. */
-	public static final float WORLD_STEP = 1/60.0f;
-	/** Number of velocity iterations for the constrain solvers */
-	public static final int WORLD_VELOC = 6;
-	/** Number of position iterations for the constrain solvers */
+//	/** The amount of time for a physics engine step. */
+//	public static final float WORLD_STEP = 1/60.0f;
+	/** Number of velocity iterations for the constraint solvers */
+	public static final int WORLD_VELOCITY = 6;
+	/** Number of position iterations for the constraint solvers */
 	public static final int WORLD_POSIT = 2;
 
 	/** Canvas used to draw the game onto the screen (VIEW CLASS) */
@@ -88,6 +88,12 @@ public class GameMode implements Screen, ContactListener {
 
 	/** Physics world (CONTROLLER CLASS) */
 	private World world;
+
+	/** Physics world (CONTROLLER CLASS) */
+	private World draw_world;
+
+	/** List of all entities in the world */
+	private List<Entity> objects;
 
 	// Physics bodies (MODEL CLASSES) 
 	/** Player controlled avatar */
@@ -103,11 +109,11 @@ public class GameMode implements Screen, ContactListener {
 	
 	// The following are all Java hacks to allow us to pass the variables by reference
 	// See changeValue() for an example of how we use them.
-	/** Object density (array so we can use as a reference variable) */
+	/** Object density (array, so we can use as a reference variable) */
 	private float[] density =  { 1.0f };
-	/** Object friction (array so we can use as a reference variable) */
+	/** Object friction (array, so we can use as a reference variable) */
 	private float[] friction = { 0.1f };
-	/** Object restitution (array so we can use as a reference variable) */
+	/** Object restitution (array, so we can use as a reference variable) */
 	private float[] restitution = { 0.0f };
 
 	// To try out new shape classes, add them here.
@@ -116,14 +122,13 @@ public class GameMode implements Screen, ContactListener {
 	/** The current active shape */
 	private int shape = 0;
 
-	/** Whether or not this player mode is still active */
+	/** Whether this player mode is still active */
 	private boolean active;
 	/** Listener that will update the player mode when we are done */
 	private ScreenListener listener;
 
 	/**
 	 * Creates a new game with the given drawing context.
-	 *
 	 * This constructor initializes the models and controllers for the game.  The
 	 * view has already been initialized by the root class.
 	 */
@@ -133,6 +138,9 @@ public class GameMode implements Screen, ContactListener {
 		
 		// Create the controllers.
 		inputController = new InputController();
+
+		// Create the list of objects
+		objects = new LinkedList<>();
 		
 		// Create the entities
 		reset();
@@ -146,11 +154,14 @@ public class GameMode implements Screen, ContactListener {
 		canvas = null;
 		world.dispose();
 		world  = null;
+		draw_world.dispose();
+		draw_world = null;
+		objects.clear();
+		objects = null;
 	}
 
 	/**
 	 * Gather the assets for this controller.
-	 *
 	 * This method extracts the asset variables from the given asset directory. It
 	 * should only be called after the asset directory is completed.
 	 *
@@ -167,10 +178,17 @@ public class GameMode implements Screen, ContactListener {
 		if (world != null) {
 			world.dispose();
 		}
+		if(draw_world != null){
+			draw_world.dispose();
+		}
+		if(objects != null){
+			objects.clear();
+		}
 		
 		// Create the world
 		Vector2 size = new Vector2 (canvas.getWidth()/canvas.getSX(), canvas.getHeight()/canvas.getSY());
 		world = new World(Vector2.Zero, false);
+		draw_world = new World(Vector2.Zero, false);
 
 		// Create the player
 		Vector2 position = new Vector2(size.x / 2,  size.y / 3.0f);
@@ -180,7 +198,8 @@ public class GameMode implements Screen, ContactListener {
 		avatar.setFriction(friction[0]);
 		avatar.setRestitution(restitution[0]);
 		avatar.setPosition(position);
-		avatar.initialize(world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+		avatar.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+		objects.add(avatar);
 
 		// Create the barrier
 		position = new Vector2 (size.x / 2, 2 * size.y/3.0f);
@@ -191,14 +210,14 @@ public class GameMode implements Screen, ContactListener {
 		barrier.setFriction(friction[0]);
 		barrier.setRestitution(restitution[0]);
 		barrier.setPosition(position);
-		barrier.initialize(world, new Vector2(BARRIER_WIDTH, BARRIER_HEIGHT));
+		barrier.initialize(world, draw_world, new Vector2(BARRIER_WIDTH, BARRIER_HEIGHT));
+		objects.add(barrier);
 
 		world.setContactListener(this);
 	}
 		
 	/**
 	 * Creates an entity of the given shape from shapeTypes.
-	 *
 	 * This method acts as a polymorphic constructor.
 	 *
 	 * @return an entity of the given shape
@@ -215,7 +234,6 @@ public class GameMode implements Screen, ContactListener {
 	
 	/**
 	 * Update the game state.
-	 *
 	 * We prefer to separate update and draw from one another as separate methods, instead
 	 * of using the single render() method that LibGDX does.  We will talk about why we
 	 * prefer this in lecture.
@@ -256,12 +274,53 @@ public class GameMode implements Screen, ContactListener {
 		}
 		
 		// Process physicsSize
-		world.step(delta, WORLD_VELOC, WORLD_POSIT);
+//		world.step(delta, WORLD_VELOCITY, WORLD_POSIT);
+		ProcessPhysics(delta);
 	}
-	
+
+	/** The mini step size. This is the "mini" steps we will use to get "close enough" to the amount of time that has actually passed. */
+	float miniStep = 0.003f;
+	/** The leftover time that needs to be iterated for next frame */
+	float remainingTime = 0;
+	/** The number of velocity iterations for the constraint solvers per mini-step */
+	int obstacle_velocity = WORLD_VELOCITY;
+	/** The number of position iterations for the constraint solvers per mini-step*/
+	int obstacle_position = WORLD_POSIT;
+
+	/** Turn the physics engine crank. */
+	private void ProcessPhysics(float dt) {
+//		System.out.println("dt is "+ dt);
+
+		// The total time needed to simulate
+		float totalTime = remainingTime + dt;
+		// The total sim time (needed for obj->update)
+//		final float totalSimTime = remainingTime + dt;
+		while (totalTime > miniStep) {
+//			for (Entity e : objects) {
+//				e.updatePhysics(miniStep, miniStep, true);
+//			}
+			world.step(miniStep, obstacle_velocity, obstacle_position);
+			totalTime -= miniStep;
+		}
+
+		// Now our real world is in the right state. Make one final step to set up the draw world and remember the remaining time from this frame
+		remainingTime = totalTime;
+		// Sync real body to draw body
+		for (Entity e : objects) {
+			e.syncBodies();
+//			e.updatePhysics(remainingTime, miniStep, false);
+		}
+		// Step the draw world by the remaining time
+		draw_world.step(remainingTime, obstacle_velocity, obstacle_position);
+
+		// Post process all objects after physics (this updates graphics)
+//		for(Entity it : objects) {
+//			it.update(totalSimTime);
+//		}
+	}
+
 	/**
 	 * Change the physics settings
-	 *
 	 * This class is like a primitive technical prototype.  It allows us to 
 	 * change various physics settings on the fly.
 	 */
@@ -311,10 +370,8 @@ public class GameMode implements Screen, ContactListener {
 	
 	/**
 	 * Change a physical value by a factor of 10.
-	 *
 	 * This function allows us to change behavior on a log scale, which is what we
 	 * have to do to see major differences in behavior.
-	 *
 	 * Note that the first value is an array.  This is a Java hack for passing a
 	 * primitive variable (in this case a float) by reference.
 	 *
@@ -349,7 +406,6 @@ public class GameMode implements Screen, ContactListener {
 		
 	/**
 	 * Draw the status of this player mode.
-	 *
 	 * We prefer to separate update and draw from one another as separate methods, instead
 	 * of using the single render() method that LibGDX does.  We will talk about why we
 	 * prefer this in lecture.
@@ -384,7 +440,6 @@ public class GameMode implements Screen, ContactListener {
 	
 	/**
 	 * Returns the string representation of the control code
-	 *
 	 * This is used to display the current controls in the HUD.
 	 *
 	 * @return the string representation of the control code
@@ -407,8 +462,7 @@ public class GameMode implements Screen, ContactListener {
 	/// SCREEN
 	
 	/**
-	 * Called when the Screen is resized. 
-	 *
+	 * Called when the Screen is resized.
 	 * This can happen at any point during a non-paused state but will never happen 
 	 * before a call to show().
 	 *
@@ -421,7 +475,6 @@ public class GameMode implements Screen, ContactListener {
 
 	/**
 	 * Called when the Screen should render itself.
-	 *
 	 * We defer to the other methods update() and draw().  However, it is VERY important
 	 * that we only quit AFTER a draw.
 	 *
@@ -439,7 +492,6 @@ public class GameMode implements Screen, ContactListener {
 
 	/**
 	 * Called when the Screen is paused.
-	 * 
 	 * This is usually when it's not active or visible on screen. An Application is 
 	 * also paused before it is destroyed.
 	 */
@@ -449,7 +501,6 @@ public class GameMode implements Screen, ContactListener {
 
 	/**
 	 * Called when the Screen is resumed from a paused state.
-	 *
 	 * This is usually when it regains focus.
 	 */
 	public void resume() {
@@ -474,7 +525,6 @@ public class GameMode implements Screen, ContactListener {
 
 	/**
 	 * Sets the ScreenListener for this mode
-	 *
 	 * The ScreenListener will respond to requests to quit.
 	 */
 	public void setScreenListener(ScreenListener listener) {
@@ -485,7 +535,6 @@ public class GameMode implements Screen, ContactListener {
 	
 	/**
 	 * Callback method for the start of a collision
-	 *
 	 * This method is called when we first get a collision between two objects.  We use 
 	 * this method to test if it is the "right" kind of collision.  In particular, we
 	 * use it to test if we made it to the win door.
@@ -506,9 +555,8 @@ public class GameMode implements Screen, ContactListener {
 
 	/**
 	 * Callback method for the start of a collision
-	 *
 	 * This method is called when two objects cease to touch.  The main use of this method
-	 * is to determine when the characer is NOT on the ground.  This is how we prevent
+	 * is to determine when the character is NOT on the ground.  This is how we prevent
 	 * double jumping.
 	 */ 
 	public void endContact(Contact contact) {
