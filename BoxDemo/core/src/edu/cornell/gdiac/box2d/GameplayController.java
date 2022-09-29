@@ -134,7 +134,7 @@ public class GameplayController {
         draw_world = new World(Vector2.Zero, false);
 
         // Create the player
-        Vector2 position = new Vector2(size.x / 2,  size.y / 3.0f);
+        Vector2 position = new Vector2(size.x / 2,  size.y / 4.0f);
         avatar = makeEntity(shape);
         avatar.getColor().set(Color.RED);
         avatar.setDensity(density[0]);
@@ -145,7 +145,7 @@ public class GameplayController {
         objects.add(avatar);
 
         // Create the barrier
-        position = new Vector2 (size.x / 2, 2 * size.y/3.0f);
+        position = new Vector2 (size.x / 2, 3 * size.y/4.0f);
         barrier = makeEntity(shape);
         barrier.setStatic(true);
         barrier.getColor().set(Color.YELLOW);

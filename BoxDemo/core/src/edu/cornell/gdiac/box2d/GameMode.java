@@ -106,7 +106,7 @@ public class GameMode implements Screen, ContactListener {
 		rightController.dispose();
 	}
 
-	float delta_cache = 0.015f;
+	float delta_cache = 0.018f;
 
 	public void update(float delta){
 		inputController.readInput();
@@ -146,10 +146,12 @@ public class GameMode implements Screen, ContactListener {
 		rightController.draw(canvas, offset);
 
 		String y_pos_diff = "Y position difference of avatar is " + (leftController.avatar.getPosition().y - rightController.avatar.getPosition().y);
-		canvas.drawText(y_pos_diff, theFont, 1, 1);
+		canvas.drawText(y_pos_diff, theFont, 1, 2);
+		String y_pos_diff_scl = "Log2 y_diff = " + Math.log(Math.abs((leftController.avatar.getPosition().y - rightController.avatar.getPosition().y)));
+		canvas.drawText(y_pos_diff_scl, theFont, 1, 1.5f);
 		String x_pos_diff = "X position difference of avatar is  " + (leftController.avatar.getPosition().x - rightController.avatar.getPosition().x);
-		canvas.drawText(x_pos_diff, theFont, 1, 2);
-		String car_pos_diff = "Car position difference of avatar is " + (leftController.car.getPosition().x - rightController.car.getPosition().x);
+		canvas.drawText(x_pos_diff, theFont, 1, 2.5f);
+		String car_pos_diff = "Position difference of car is " + (leftController.car.getPosition().x - rightController.car.getPosition().x);
 		canvas.drawText(car_pos_diff, theFont, 1, 3);
 
 		canvas.end();
