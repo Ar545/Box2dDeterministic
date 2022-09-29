@@ -86,6 +86,22 @@ public abstract class Entity {
 	}
 
 	/**
+	 * Returns the position of this physics object
+	 *
+	 * If the physics object has been initialized (e.g. it has an allocated body),
+	 * then it will return the current position.  It is unsafe to change the returned
+	 * object.  Modifications to this object result in undefined behavior.
+	 *
+	 * @return the position of this physics object
+	 */
+	public Vector2 getDrawPosition() {
+		if (draw_body == null) {
+			return position;
+		}
+		return draw_body.getPosition();
+	}
+
+	/**
 	 * Sets the positition of the physics object
 	 *
 	 * If the object is already initialized (e.g. it has an allocated body), this will
@@ -367,11 +383,13 @@ public abstract class Entity {
 	protected abstract void makeGraphics(Vector2 size);
 
 	/** Gravity is proportional to one over radius squared */
+	//TODO: is the position (from body, not draw body) correct?
 	public void updateAttractionForce(Entity barrier) {
 		Vector2 directedForce = barrier.getPosition().cpy().sub(this.getPosition());
 		float radius = directedForce.len();
 		directedForce.nor().scl(1/(radius * radius));
 		this.body.applyForceToCenter(directedForce, true);
+		this.draw_body.applyForceToCenter(directedForce, true);
 //		restitution
 	}
 

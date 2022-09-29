@@ -96,9 +96,12 @@ public class GameplayController {
 
     Vector2 size;
 
-    public GameplayController(){
+    boolean inverted;
+
+    public GameplayController(boolean inverted){
         // Create the list of objects
         objects = new LinkedList<>();
+        this.inverted = inverted;
     }
 
     /** Dispose of all (non-static) resources allocated to this mode. */
@@ -243,6 +246,9 @@ public class GameplayController {
     /** The number of position iterations for the constraint solvers per mini-step*/
     int obstacle_position = WORLD_POSIT;
 
+    /** very first frame period, inverted to be the last frame period for world 2  */
+    float first_delta = 0.0f;
+
     /** Turn the physics engine crank. */
     private void ProcessPhysics(float dt) {
 //		System.out.println("dt is "+ dt);
@@ -252,9 +258,6 @@ public class GameplayController {
         // The total sim time (needed for obj->update)
 //		final float totalSimTime = remainingTime + dt;
         while (totalTime > miniStep) {
-			for (Entity e : objects) {
-//				e.updatePhysics();
-			}
             avatar.updateAttractionForce(barrier);
             world.step(miniStep, obstacle_velocity, obstacle_position);
             totalTime -= miniStep;
@@ -265,16 +268,26 @@ public class GameplayController {
         // Sync real body to draw body
         for (Entity e : objects) {
             e.syncBodies();
-//			e.updatePhysics();
         }
-        avatar.updateAttractionForce(barrier);
-        // Step the draw world by the remaining time
-        draw_world.step(remainingTime, obstacle_velocity, obstacle_position);
 
-        // Post process all objects after physics (this updates graphics)
-//		for(Entity it : objects) {
-//			it.update(totalSimTime);
-//		}
+        if(!inverted){
+            // Left controller
+            // Step the draw world by the remaining time
+            avatar.updateAttractionForce(barrier);
+            draw_world.step(remainingTime, obstacle_velocity, obstacle_position);
+        }else{
+            // Right controller
+            // add to remainingTime the first time period
+            float invertedTime = remainingTime + first_delta;
+            while(invertedTime > miniStep){
+                avatar.updateAttractionForce(barrier);
+                draw_world.step(miniStep, obstacle_velocity, obstacle_position);
+                invertedTime -= miniStep;
+            }
+            avatar.updateAttractionForce(barrier);
+            draw_world.step(invertedTime, obstacle_velocity, obstacle_position);
+
+        }
     }
 
     public void changeSettings(InputController inputController){

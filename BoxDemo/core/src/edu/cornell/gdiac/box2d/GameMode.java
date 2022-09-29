@@ -62,8 +62,8 @@ public class GameMode implements Screen, ContactListener {
 
 		// Create the controllers.
 		inputController = new InputController();
-		leftController = new GameplayController();
-		rightController = new GameplayController();
+		leftController = new GameplayController(false);
+		rightController = new GameplayController(true);
 
 		// Create the entities
 		reset();
@@ -106,17 +106,20 @@ public class GameMode implements Screen, ContactListener {
 		rightController.dispose();
 	}
 
-	float delta_cache = 0.018f;
+
 
 	public void update(float delta){
 		inputController.readInput();
 
-
 		// Process all the settings (density, friction, etc.) changes
 		changeSettings();
 		leftController.update(delta, inputController);
-		rightController.update(delta_cache, inputController);
-		delta_cache = delta;
+		if(rightController.first_delta == 0f){
+			rightController.first_delta = delta;
+//			rightController.update(0f, inputController);
+		}else{
+			rightController.update(delta, inputController);
+		}
 	}
 
 	/**
@@ -145,13 +148,13 @@ public class GameMode implements Screen, ContactListener {
 		leftController.draw(canvas);
 		rightController.draw(canvas, offset);
 
-		String y_pos_diff = "Y position difference of avatar is " + (leftController.avatar.getPosition().y - rightController.avatar.getPosition().y);
+		String y_pos_diff = "Y position difference of avatar is " + (leftController.avatar.getDrawPosition().y - rightController.avatar.getDrawPosition().y);
 		canvas.drawText(y_pos_diff, theFont, 1, 2);
-		String y_pos_diff_scl = "Log2 y_diff = " + Math.log(Math.abs((leftController.avatar.getPosition().y - rightController.avatar.getPosition().y)));
+		String y_pos_diff_scl = "Log2 y_diff = " + Math.log(Math.abs((leftController.avatar.getDrawPosition().y - rightController.avatar.getDrawPosition().y)));
 		canvas.drawText(y_pos_diff_scl, theFont, 1, 1.5f);
-		String x_pos_diff = "X position difference of avatar is  " + (leftController.avatar.getPosition().x - rightController.avatar.getPosition().x);
+		String x_pos_diff = "X position difference of avatar is  " + (leftController.avatar.getDrawPosition().x - rightController.avatar.getDrawPosition().x);
 		canvas.drawText(x_pos_diff, theFont, 1, 2.5f);
-		String car_pos_diff = "Position difference of car is " + (leftController.car.getPosition().x - rightController.car.getPosition().x);
+		String car_pos_diff = "Position difference of car is " + (leftController.car.getDrawPosition().x - rightController.car.getDrawPosition().x);
 		canvas.drawText(car_pos_diff, theFont, 1, 3);
 
 		canvas.end();

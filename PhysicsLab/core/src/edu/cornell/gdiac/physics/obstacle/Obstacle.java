@@ -1004,5 +1004,6 @@ public abstract class Obstacle {
 	public void syncBodies() {}
 
 	public void updatePhysics(float dt, float timestep, boolean real) {
+
 	}
 }
