@@ -114,12 +114,7 @@ public class GameMode implements Screen, ContactListener {
 		// Process all the settings (density, friction, etc.) changes
 		changeSettings();
 		leftController.update(delta, inputController);
-		if(rightController.first_delta == 0f){
-			rightController.first_delta = delta;
-//			rightController.update(0f, inputController);
-		}else{
-			rightController.update(delta, inputController);
-		}
+		rightController.update(delta, inputController);
 	}
 
 	/**

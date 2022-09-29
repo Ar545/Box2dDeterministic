@@ -92,7 +92,7 @@ public class GameplayController {
     /** The list of shape classes */
     private Class[] shapeTypes = { Box.class, Triangle.class, Circle.class, Ellipse.class };
     /** The current active shape */
-    private int shape = 3;
+    private int shape = 2;
 
     Vector2 size;
 
@@ -137,7 +137,7 @@ public class GameplayController {
         draw_world = new World(Vector2.Zero, false);
 
         // Create the player
-        Vector2 position = new Vector2(size.x / 2,  size.y / 4.0f);
+        Vector2 position = new Vector2(size.x / 3,  size.y / 6.0f);
         avatar = makeEntity(shape);
         avatar.getColor().set(Color.RED);
         avatar.setDensity(density[0]);
@@ -148,7 +148,7 @@ public class GameplayController {
         objects.add(avatar);
 
         // Create the barrier
-        position = new Vector2 (size.x / 2, 3 * size.y/4.0f);
+        position = new Vector2 (2*size.x / 3, 5 * size.y/6.0f);
         barrier = makeEntity(shape);
         barrier.setStatic(true);
         barrier.getColor().set(Color.YELLOW);
@@ -162,7 +162,8 @@ public class GameplayController {
         // Create the reference object
         position = new Vector2 (0, 0);
         car = makeEntity(shape);
-        car.setKinetic();
+        car.setStatic(false);
+//        car.setKinetic();
         car.getColor().set(Color.GREEN);
         car.setDensity(density[0]);
         car.setFriction(friction[0]);
@@ -171,6 +172,9 @@ public class GameplayController {
         car.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
         objects.add(car);
         car.body.setLinearVelocity(0.1f, 0);
+
+        first_delta = 0;
+
     }
 
     public void setContactListener(GameMode gm){
@@ -251,7 +255,10 @@ public class GameplayController {
 
     /** Turn the physics engine crank. */
     private void ProcessPhysics(float dt) {
-//		System.out.println("dt is "+ dt);
+        if(inverted && first_delta == 0){
+            first_delta = dt;
+            return;
+        }
 
         // The total time needed to simulate
         float totalTime = remainingTime + dt;
@@ -273,18 +280,18 @@ public class GameplayController {
         if(!inverted){
             // Left controller
             // Step the draw world by the remaining time
-            avatar.updateAttractionForce(barrier);
+            avatar.updateAttractionForceDrawBody(barrier);
             draw_world.step(remainingTime, obstacle_velocity, obstacle_position);
         }else{
             // Right controller
             // add to remainingTime the first time period
             float invertedTime = remainingTime + first_delta;
             while(invertedTime > miniStep){
-                avatar.updateAttractionForce(barrier);
+                avatar.updateAttractionForceDrawBody(barrier);
                 draw_world.step(miniStep, obstacle_velocity, obstacle_position);
                 invertedTime -= miniStep;
             }
-            avatar.updateAttractionForce(barrier);
+            avatar.updateAttractionForceDrawBody(barrier);
             draw_world.step(invertedTime, obstacle_velocity, obstacle_position);
 
         }

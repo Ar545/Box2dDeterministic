@@ -387,8 +387,17 @@ public abstract class Entity {
 	public void updateAttractionForce(Entity barrier) {
 		Vector2 directedForce = barrier.getPosition().cpy().sub(this.getPosition());
 		float radius = directedForce.len();
-		directedForce.nor().scl(1/(radius * radius));
+		directedForce.nor().scl(3/(radius * radius));
 		this.body.applyForceToCenter(directedForce, true);
+//		restitution
+	}
+
+	/** Gravity is proportional to one over radius squared */
+	// TODO: is the position (from body, not draw body) correct?
+	public void updateAttractionForceDrawBody(Entity barrier) {
+		Vector2 directedForce = barrier.draw_body.getPosition().cpy().sub(this.draw_body.getPosition());
+		float radius = directedForce.len();
+		directedForce.nor().scl(3/(radius * radius));
 		this.draw_body.applyForceToCenter(directedForce, true);
 //		restitution
 	}
