@@ -56,6 +56,8 @@ public class GDXRoot extends Game implements ScreenListener {
 	 */
 	public void create() {
 		canvas  = new GameCanvas();
+		canvas.setWidth(2000);
+		canvas.setHeight(800);
 		loading = new LoadingMode("assets.json",canvas,1);
 		playing = null;
 		

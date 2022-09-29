@@ -269,7 +269,6 @@ public abstract class Entity {
 
 	/**
 	 * Sets whether the body type is static (if true) or dynamic
-	 *
 	 * There are actually three body types: Static, Kinematic, 
 	 * and Dynamic.  But only Static and Dynamic are useful, so
 	 * this is an easy way to go back and forth.
@@ -280,6 +279,13 @@ public abstract class Entity {
 		isStatic = value;
 		if (body != null) {
 			body.setType(isStatic ? BodyType.StaticBody : BodyType.DynamicBody);
+		}
+	}
+
+	/** Sets the body type to kinetic. */
+	public void setKinetic() {
+		if (body != null) {
+			body.setType(BodyType.KinematicBody);
 		}
 	}
 	
@@ -337,6 +343,16 @@ public abstract class Entity {
 	}
 
 	/**
+	 * Draws the physics object.
+	 *
+	 * @param canvas The drawing context
+	 */
+	public void draw(GameCanvas canvas, float offset) {
+		// TO DO: Check units
+		canvas.draw(poly, color, draw_body.getPosition().x + offset, draw_body.getPosition().y, draw_body.getAngle());
+	}
+
+	/**
      * Create the collision shape information
      *
      * @param size The object bounding box
@@ -349,5 +365,16 @@ public abstract class Entity {
      * @param size The object bounding box
      */
 	protected abstract void makeGraphics(Vector2 size);
+
+	/** Gravity is proportional to one over radius squared */
+	public void updateAttractionForce(Entity barrier) {
+		Vector2 directedForce = barrier.getPosition().cpy().sub(this.getPosition());
+		float radius = directedForce.len();
+		directedForce.nor().scl(1/(radius * radius));
+		this.body.applyForceToCenter(directedForce, true);
+//		restitution
+	}
+
+//	protected abstract void updatePhysics();
 
 }
