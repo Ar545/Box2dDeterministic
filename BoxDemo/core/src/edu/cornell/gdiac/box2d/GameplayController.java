@@ -253,6 +253,8 @@ public class GameplayController {
     /** very first frame period, inverted to be the last frame period for world 2  */
     float first_delta = 0.0f;
 
+    Vector2 fixedLengthPosition = new Vector2();
+
     /** Turn the physics engine crank. */
     private void ProcessPhysics(float dt) {
         if(inverted && first_delta == 0){
@@ -278,6 +280,7 @@ public class GameplayController {
         }
 
         if(!inverted){
+            fixedLengthPosition = avatar.getPosition();
             // Left controller
             // Step the draw world by the remaining time
             avatar.updateAttractionForceDrawBody(barrier);
@@ -291,6 +294,7 @@ public class GameplayController {
                 draw_world.step(miniStep, obstacle_velocity, obstacle_position);
                 invertedTime -= miniStep;
             }
+            fixedLengthPosition = avatar.getDrawPosition();
             avatar.updateAttractionForceDrawBody(barrier);
             draw_world.step(invertedTime, obstacle_velocity, obstacle_position);
 

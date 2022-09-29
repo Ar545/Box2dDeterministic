@@ -151,6 +151,10 @@ public class GameMode implements Screen, ContactListener {
 		canvas.drawText(x_pos_diff, theFont, 1, 2.5f);
 		String car_pos_diff = "Position difference of car is " + (leftController.car.getDrawPosition().x - rightController.car.getDrawPosition().x);
 		canvas.drawText(car_pos_diff, theFont, 1, 3);
+		String x_pos_fixed_diff = "X fixed pos difference of avatar is  " + (leftController.fixedLengthPosition.x - rightController.fixedLengthPosition.x);
+		canvas.drawText(x_pos_fixed_diff, theFont, 1, 1f);
+		String y_pos_fixed_diff = "Y fixed pos difference of avatar is  " + (leftController.fixedLengthPosition.y - rightController.fixedLengthPosition.y);
+		canvas.drawText(y_pos_fixed_diff, theFont, 1, 0.5f);
 
 		canvas.end();
 	}
