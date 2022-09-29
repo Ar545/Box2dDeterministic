@@ -4,17 +4,21 @@ This experiment aims to find the source of indeterministic of Box2D physics in J
 
 **Exp I: Under the box2D directory**
 There are three objects in the world: 
-Avatar:
-- An free-moving object with full restitution (elasticity = 1) experience a gravity force to the barrier. (Mag of force is prop to 1/radius^2)
-Barrier:
-- An static object.
-Car:
-- An kinetic object that experience constant linear velocity on +x direction. 
-- Used to check if the time frame goes by 0.003s (check position increase for isolated object with only linear impluse).
+- Avatar:
+
+An free-moving object with full restitution (elasticity = 1) experience a gravity force to the barrier. (Mag of force is prop to 1/radius^2)
+- Barrier:
+
+An static object.
+- Car:
+
+An kinetic object that experience constant linear velocity on +x direction. 
+Used to check if the time frame goes by 0.003s (check position increase for isolated object with only linear impluse).
 
 Plan to introduce additional objects:
-Alternative avatar:
-- An free-moving object with full restitution (elasticity = 1) experience a linear impulse toward the barrier. 
+- Alternative avatar:
+
+An free-moving object with full restitution (elasticity = 1) experience a linear impulse toward the barrier. 
 
 **Indeterministic behavior observed on avatar even though physics are updated on 0.003f(s) steps.**
 
