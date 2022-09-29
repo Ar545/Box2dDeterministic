@@ -12,16 +12,11 @@ package edu.cornell.gdiac.box2d;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.Vector2;
-//import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
-//import edu.cornell.gdiac.box2d.shape.*;
-
-//import java.util.LinkedList;
-//import java.util.List;
 
 /**
  * The primary controller class for the game.
@@ -150,11 +145,13 @@ public class GameMode implements Screen, ContactListener {
 		leftController.draw(canvas);
 		rightController.draw(canvas, offset);
 
-		String x_pos_diff = "X diff is " + (leftController.avatar.getPosition().x - rightController.avatar.getPosition().x);
-		canvas.drawText(x_pos_diff, theFont, 1, 1);
+		String y_pos_diff = "Y position difference of avatar is " + (leftController.avatar.getPosition().y - rightController.avatar.getPosition().y);
+		canvas.drawText(y_pos_diff, theFont, 1, 1);
+		String x_pos_diff = "X position difference of avatar is  " + (leftController.avatar.getPosition().x - rightController.avatar.getPosition().x);
+		canvas.drawText(x_pos_diff, theFont, 1, 2);
+		String car_pos_diff = "Car position difference of avatar is " + (leftController.car.getPosition().x - rightController.car.getPosition().x);
+		canvas.drawText(car_pos_diff, theFont, 1, 3);
 
-		String y_pos_diff = "Y diff is " + (leftController.avatar.getPosition().y - rightController.avatar.getPosition().y);
-		canvas.drawText(y_pos_diff, theFont, 1, 2);
 		canvas.end();
 	}
 
@@ -260,6 +257,5 @@ public class GameMode implements Screen, ContactListener {
 	public void postSolve(Contact contact, ContactImpulse impulse) {}
 	/** Unused ContactListener method */
 	public void preSolve(Contact contact, Manifold oldManifold) {}
-	
 
 }

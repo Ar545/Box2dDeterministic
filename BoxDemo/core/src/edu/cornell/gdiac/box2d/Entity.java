@@ -269,7 +269,6 @@ public abstract class Entity {
 
 	/**
 	 * Sets whether the body type is static (if true) or dynamic
-	 *
 	 * There are actually three body types: Static, Kinematic, 
 	 * and Dynamic.  But only Static and Dynamic are useful, so
 	 * this is an easy way to go back and forth.
@@ -280,6 +279,13 @@ public abstract class Entity {
 		isStatic = value;
 		if (body != null) {
 			body.setType(isStatic ? BodyType.StaticBody : BodyType.DynamicBody);
+		}
+	}
+
+	/** Sets the body type to kinetic. */
+	public void setKinetic() {
+		if (body != null) {
+			body.setType(BodyType.KinematicBody);
 		}
 	}
 	

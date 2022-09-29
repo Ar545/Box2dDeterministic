@@ -1,19 +1,14 @@
 package edu.cornell.gdiac.box2d;
 
-//import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-//import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-//import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.box2d.shape.Box;
 import edu.cornell.gdiac.box2d.shape.Circle;
 import edu.cornell.gdiac.box2d.shape.Ellipse;
 import edu.cornell.gdiac.box2d.shape.Triangle;
-//import edu.cornell.gdiac.util.ScreenListener;
 
-//import java.awt.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,8 +35,6 @@ public class GameplayController {
     public static final int CONTROL_TRANSLATE = 3;
     public static final int NUM_CONTROLS = 4;
 
-
-
     // Default sizes for the model objects
     public static final int AVATAR_WIDTH   = 1;
     public static final int AVATAR_HEIGHT  = 1;
@@ -59,13 +52,9 @@ public class GameplayController {
 //	/** The amount of time for a physics engine step. */
 //	public static final float WORLD_STEP = 1/60.0f;
     /** Number of velocity iterations for the constraint solvers */
-    public static final int WORLD_VELOCITY = 6;
+    public static final int WORLD_VELOCITY = 2;
     /** Number of position iterations for the constraint solvers */
     public static final int WORLD_POSIT = 2;
-
-
-
-
 
     /** Physics world (CONTROLLER CLASS) */
     private World world;
@@ -81,6 +70,8 @@ public class GameplayController {
     public Entity avatar;
     /** Static (unmovable) barrier */
     private Entity barrier;
+    /** Kinetic (fixed movement) reference object */
+    public Entity car;
     /** Cache object for moving the player */
     private Vector2 translate = new Vector2();
 
@@ -103,18 +94,14 @@ public class GameplayController {
     /** The current active shape */
     private int shape = 3;
 
-
     Vector2 size;
 
     public GameplayController(){
         // Create the list of objects
         objects = new LinkedList<>();
-
     }
 
-    /**
-     * Dispose of all (non-static) resources allocated to this mode.
-     */
+    /** Dispose of all (non-static) resources allocated to this mode. */
     public void dispose() {
         world.dispose();
         world  = null;
@@ -130,9 +117,7 @@ public class GameplayController {
         reset();
     }
 
-    /**
-     * Creates the game models and puts them into place
-     */
+    /** Creates the game models and puts them into place */
     protected void reset() {
 
         if (world != null) {
@@ -144,7 +129,6 @@ public class GameplayController {
         if(objects != null){
             objects.clear();
         }
-
 
         world = new World(Vector2.Zero, false);
         draw_world = new World(Vector2.Zero, false);
@@ -172,7 +156,18 @@ public class GameplayController {
         barrier.initialize(world, draw_world, new Vector2(BARRIER_WIDTH, BARRIER_HEIGHT));
         objects.add(barrier);
 
-
+        // Create the reference object
+        position = new Vector2 (0, 0);
+        car = makeEntity(shape);
+        car.setKinetic();
+        car.getColor().set(Color.GREEN);
+        car.setDensity(density[0]);
+        car.setFriction(friction[0]);
+        car.setRestitution(restitution[0]);
+        car.setPosition(position);
+        car.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+        objects.add(car);
+        car.body.setLinearVelocity(0.1f, 0);
     }
 
     public void setContactListener(GameMode gm){
@@ -390,6 +385,7 @@ public class GameplayController {
         // Draw the shapes.
         avatar.draw(canvas);
         barrier.draw(canvas);
+        car.draw(canvas);
 
         // Draw the HUD.
         String shape = "Shape: " + avatar.getClass().getSimpleName();
@@ -415,6 +411,7 @@ public class GameplayController {
         // Draw the shapes.
         avatar.draw(canvas, offset);
         barrier.draw(canvas, offset);
+        car.draw(canvas, offset);
 
         // Draw the HUD.
         String shape = "Shape: " + avatar.getClass().getSimpleName();
@@ -427,7 +424,7 @@ public class GameplayController {
 
 
         // Lots of magic numbers here.  Bad programming style. Don't do this.
-        Vector2 size = new Vector2 (canvas.getWidth()/canvas.getSX(), canvas.getHeight()/canvas.getSY());
+        Vector2 size = new Vector2 (canvas.getWidth()/(canvas.getSX() * 2), canvas.getHeight()/canvas.getSY());
         canvas.drawText(shape, theFont, LEFT_OFFSET + offset, size.y-TOP_OFFSET);
         canvas.drawText(version, theFont, size.x-RIGHT_OFFSET + offset, size.y-TOP_OFFSET);
         canvas.drawText(dense, theFont, LEFT_OFFSET + offset, BOT_OFFSET);
