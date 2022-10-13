@@ -96,9 +96,12 @@ public class GameplayController {
 
     Vector2 size;
 
-    public GameplayController(){
+    boolean isLeft;
+
+    public GameplayController(boolean isLeft){
         // Create the list of objects
         objects = new LinkedList<>();
+        this.isLeft = isLeft;
     }
 
     /** Dispose of all (non-static) resources allocated to this mode. */
@@ -143,6 +146,8 @@ public class GameplayController {
         avatar.setPosition(position);
         avatar.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
         objects.add(avatar);
+
+        System.out.println("initial-y-pos:" + Float.floatToRawIntBits(position.y));
 
         // Create the barrier
         position = new Vector2 (size.x / 2, 3 * size.y/4.0f);
@@ -199,7 +204,7 @@ public class GameplayController {
      *
      * @param delta Number of seconds since last animation frame
      */
-    public void update(float delta, InputController inputController) {
+    public void update(float delta, InputController inputController, int[][] debugArray) {
 
 
         // Process avatar movement.
@@ -231,7 +236,7 @@ public class GameplayController {
 
         // Process physicsSize
 //		world.step(delta, WORLD_VELOCITY, WORLD_POSIT);
-        ProcessPhysics(delta);
+        ProcessPhysics(delta, debugArray);
     }
 
     /** The mini step size. This is the "mini" steps we will use to get "close enough" to the amount of time that has actually passed. */
@@ -244,7 +249,7 @@ public class GameplayController {
     int obstacle_position = WORLD_POSIT;
 
     /** Turn the physics engine crank. */
-    private void ProcessPhysics(float dt) {
+    private void ProcessPhysics(float dt, int[][] debugArray) {
 //		System.out.println("dt is "+ dt);
 
         // The total time needed to simulate
@@ -257,6 +262,15 @@ public class GameplayController {
 			}
             avatar.updateAttractionForce(barrier);
             world.step(miniStep, obstacle_velocity, obstacle_position);
+            System.out.println(Float.floatToRawIntBits(miniStep));
+
+            // TODO: fill in the array
+
+            int time = Math.round(car.getPosition().x * 1000 / 3) ;
+            if(time < debugArray[0].length){
+                debugArray[isLeft ? 0 : 1][time] = Float.floatToRawIntBits(avatar.getPosition().y);
+            }
+
             totalTime -= miniStep;
         }
 
