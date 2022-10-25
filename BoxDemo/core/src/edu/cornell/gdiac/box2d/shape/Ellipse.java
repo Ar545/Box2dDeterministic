@@ -17,9 +17,12 @@ package edu.cornell.gdiac.box2d.shape;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.box2d.*;  // For GameCanvas and Entity
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.dynamics.FixtureDef;
+import org.jbox2d.common.Vec2;
 
 /**
  * An elliptical physics object.
@@ -43,7 +46,7 @@ public class Ellipse extends Entity {
 	 *
 	 * @return an array of vertices representing an ellipse
 	 */
-	private float[] makeEllipse(Vector2 size) {
+	private float[] makeEllipse(Vec2 size) {
 		// Make the ellipse centered at origin
 		float stepSize = 2*(float)Math.PI / NUM_EDGES;
 		
@@ -64,7 +67,7 @@ public class Ellipse extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeFixture(Vector2 size) {
+	protected void makeFixture(Vec2 size) {
 		shape = new PolygonShape();
 		shape.set(makeEllipse(size));
 
@@ -76,7 +79,7 @@ public class Ellipse extends Entity {
 		def.shape = shape;
 
 		fixture = body.createFixture(def);
-		shape.dispose(); // Do not need it anymore
+//		shape.dispose(); // Do not need it anymore
 	}
 
 	/**
@@ -84,7 +87,7 @@ public class Ellipse extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeGraphics(Vector2 size) {
+	protected void makeGraphics(Vec2 size) {
 		float[] vertices = makeEllipse(size);
 
 		// Triangle fans were removed in XNA 4.0.  Indices are a way around this.

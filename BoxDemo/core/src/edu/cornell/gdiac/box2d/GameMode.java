@@ -13,7 +13,11 @@ package edu.cornell.gdiac.box2d;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
+import org.jbox2d.callbacks.*;
+import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.*;
+import org.jbox2d.collision.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;

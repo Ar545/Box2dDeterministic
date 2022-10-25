@@ -12,9 +12,12 @@ package edu.cornell.gdiac.box2d.shape;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.box2d.*;  // For GameCanvas and Entity
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.dynamics.FixtureDef;
+import org.jbox2d.common.Vec2;
 
 /**
  * A triangular physics object.
@@ -36,7 +39,7 @@ public class Triangle extends Entity {
 	 *
 	 * @return an array of vertices representing an equilateral triangle
 	 */
-	private float[] makeTriangle(Vector2 size) {
+	private float[] makeTriangle(Vec2 size) {
 		float[] vertices = new float[6];
 		float altitude  = (float)Math.sqrt(3) * size.y / 2.0f;
 		float halfWidth = size.x / 2.0f;
@@ -56,7 +59,7 @@ public class Triangle extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeFixture(Vector2 size) {
+	protected void makeFixture(Vec2 size) {
 		shape = new PolygonShape();
 		shape.set(makeTriangle(size));
 
@@ -68,7 +71,7 @@ public class Triangle extends Entity {
 		def.shape = shape;
 
 		fixture = body.createFixture(def);
-		shape.dispose(); // Do not need it anymore
+//		shape.dispose(); // Do not need it anymore
 	}
 
 	/**
@@ -76,7 +79,7 @@ public class Triangle extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeGraphics(Vector2 size) {
+	protected void makeGraphics(Vec2 size) {
 		float[] vertices = makeTriangle(size);
 
 		// Indices are trivial

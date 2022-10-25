@@ -3,7 +3,10 @@ package edu.cornell.gdiac.box2d;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
+import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.*;
 import edu.cornell.gdiac.box2d.shape.Box;
 import edu.cornell.gdiac.box2d.shape.Circle;
 import edu.cornell.gdiac.box2d.shape.Ellipse;
@@ -73,7 +76,7 @@ public class GameplayController {
     /** Kinetic (fixed movement) reference object */
     public Entity car;
     /** Cache object for moving the player */
-    private Vector2 translate = new Vector2();
+    private Vec2 translate = new Vec2();
 
     // Reference states for game HUD
     /** The current active control screen */
@@ -106,9 +109,9 @@ public class GameplayController {
 
     /** Dispose of all (non-static) resources allocated to this mode. */
     public void dispose() {
-        world.dispose();
+//        world.dispose();
         world  = null;
-        draw_world.dispose();
+//        draw_world.dispose();
         draw_world = null;
         objects.clear();
         objects = null;
@@ -124,33 +127,33 @@ public class GameplayController {
     protected void reset() {
 
         if (world != null) {
-            world.dispose();
+//            world.dispose();
         }
         if(draw_world != null){
-            draw_world.dispose();
+//            draw_world.dispose();
         }
         if(objects != null){
             objects.clear();
         }
 
-        world = new World(Vector2.Zero, false);
-        draw_world = new World(Vector2.Zero, false);
+        world = new World(new Vec2());
+        draw_world = new World(new Vec2());
 
         // Create the player
-        Vector2 position = new Vector2(size.x / 2,  size.y / 4.0f);
+        Vec2 position = new Vec2(size.x / 2,  size.y / 4.0f);
         avatar = makeEntity(shape);
         avatar.getColor().set(Color.RED);
         avatar.setDensity(density[0]);
         avatar.setFriction(friction[0]);
         avatar.setRestitution(restitution[0]);
         avatar.setPosition(position);
-        avatar.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+        avatar.initialize(world, draw_world, new Vec2(AVATAR_WIDTH, AVATAR_HEIGHT));
         objects.add(avatar);
 
         System.out.println("initial-y-pos:" + Float.floatToRawIntBits(position.y));
 
         // Create the barrier
-        position = new Vector2 (size.x / 2, 3 * size.y/4.0f);
+        position = new Vec2 (size.x / 2, 3 * size.y/4.0f);
         barrier = makeEntity(shape);
         barrier.setStatic(true);
         barrier.getColor().set(Color.YELLOW);
@@ -158,11 +161,11 @@ public class GameplayController {
         barrier.setFriction(friction[0]);
         barrier.setRestitution(restitution[0]);
         barrier.setPosition(position);
-        barrier.initialize(world, draw_world, new Vector2(BARRIER_WIDTH, BARRIER_HEIGHT));
+        barrier.initialize(world, draw_world, new Vec2(BARRIER_WIDTH, BARRIER_HEIGHT));
         objects.add(barrier);
 
         // Create the reference object
-        position = new Vector2 (0, 0);
+        position = new Vec2 (0, 0);
         car = makeEntity(shape);
         car.setKinetic();
         car.getColor().set(Color.GREEN);
@@ -170,9 +173,9 @@ public class GameplayController {
         car.setFriction(friction[0]);
         car.setRestitution(restitution[0]);
         car.setPosition(position);
-        car.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+        car.initialize(world, draw_world, new Vec2(AVATAR_WIDTH, AVATAR_HEIGHT));
         objects.add(car);
-        car.body.setLinearVelocity(0.1f, 0);
+        car.body.setLinearVelocity(new Vec2(0.1f, 0));
     }
 
     public void setContactListener(GameMode gm){
@@ -210,12 +213,12 @@ public class GameplayController {
         // Process avatar movement.
         switch (controls) {
             case CONTROL_FORCE:
-                avatar.getBody().applyForce (inputController.getLinearForce(), avatar.getBody().getPosition(), true);
-                avatar.getBody().applyTorque(inputController.getAngularForce(), true);
+                avatar.getBody().applyForce (inputController.getLinearForce(), avatar.getBody().getPosition());
+                avatar.getBody().applyTorque(inputController.getAngularForce());
                 break;
             case CONTROL_IMPULSE:
                 avatar.getBody().applyLinearImpulse(inputController.getLinearForce(), avatar.getBody().getPosition(), true);
-                avatar.getBody().applyAngularImpulse(inputController.getAngularForce(), true);
+                avatar.getBody().applyAngularImpulse(inputController.getAngularForce());
                 break;
             case CONTROL_VELOCITY:
                 avatar.getBody().setLinearVelocity(inputController.getLinearForce());
@@ -223,7 +226,7 @@ public class GameplayController {
                 break;
             case CONTROL_TRANSLATE:
                 // We have to adjust this a lot to keep it from zipping about
-                translate.set(inputController.getLinearForce()).scl(1/50.0f);
+                translate.set(inputController.getLinearForce()).mul(1/50.0f);
                 translate.add(avatar.getBody().getPosition());
 
                 float ang = avatar.getBody().getAngle() + inputController.getAngularForce();
@@ -319,12 +322,12 @@ public class GameplayController {
         if (inputController.getControls() > 0) {
             controls = (controls + inputController.getControls()) % NUM_CONTROLS;
             // Stop the body.
-            avatar.getBody().setLinearVelocity(Vector2.Zero);
+            avatar.getBody().setLinearVelocity(new Vec2());
             avatar.getBody().setAngularVelocity(0f);
         } else if (inputController.getControls() < 0) {
             controls = (controls + (NUM_CONTROLS+inputController.getControls())) % NUM_CONTROLS;
             // Stop the body.
-            avatar.getBody().setLinearVelocity(Vector2.Zero);
+            avatar.getBody().setLinearVelocity(new Vec2());
             avatar.getBody().setAngularVelocity(0f);
         }
         if(reset){

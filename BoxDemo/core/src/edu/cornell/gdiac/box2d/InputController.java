@@ -18,6 +18,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.Array;
 import edu.cornell.gdiac.util.*;
+import org.jbox2d.common.Vec2;
 
 /**
  * Class for reading player input. 
@@ -55,9 +56,9 @@ public class InputController {
 
 	// Fields to manage shape movement
 	/** The linear force (or velocity) from the input */
-	protected Vector2 linearForce;
+	protected Vec2 linearForce;
 	/** A cache variable to allow safe access to linearForce */
-	protected Vector2 linearCache;
+	protected Vec2 linearCache;
 	/** The angular force (or velocity) from the input */
 	protected float angularForce;
 	
@@ -73,7 +74,7 @@ public class InputController {
 	 *
 	 * @return the amount of translational movement
 	 */
-	public Vector2 getLinearForce() {
+	public Vec2 getLinearForce() {
 		return linearCache.set(linearForce);
 	}
 
@@ -178,8 +179,8 @@ public class InputController {
 		} else {
 			xbox = null;
 		}
-		linearForce = new Vector2();
-		linearCache = new Vector2();
+		linearForce = new Vec2();
+		linearCache = new Vec2();
 	}
 
 
@@ -262,7 +263,7 @@ public class InputController {
 		// Move the shape
 		linearForce.x = xbox.getRightX();
 		linearForce.y = xbox.getRightY();
-		linearForce.nor();
+		linearForce.normalize();
 		
 		angularForce = (float)Math.acos(linearForce.x);
 		if (linearForce.y < 0) {

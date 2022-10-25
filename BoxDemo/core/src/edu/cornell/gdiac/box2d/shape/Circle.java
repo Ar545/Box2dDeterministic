@@ -14,9 +14,12 @@ package edu.cornell.gdiac.box2d.shape;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.box2d.*;  // For GameCanvas and Entity
+import org.jbox2d.collision.shapes.CircleShape;
+import org.jbox2d.dynamics.FixtureDef;
+import org.jbox2d.common.Vec2;
 
 /**
  * An circular physics object.
@@ -40,7 +43,7 @@ public class Circle extends Entity {
 	 *
 	 * @return an array of vertices representing a circle
 	 */
-	private float[] makeCircle(Vector2 size) {
+	private float[] makeCircle(Vec2 size) {
 		// Make the ellipse centered at origin
 		float stepSize = 2*(float)Math.PI / NUM_EDGES;
 		
@@ -60,7 +63,7 @@ public class Circle extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeFixture(Vector2 size) {
+	protected void makeFixture(Vec2 size) {
 		shape = new CircleShape();
 		shape.setRadius(Math.min(size.x, size.y)/2.0f);
 
@@ -72,7 +75,7 @@ public class Circle extends Entity {
 		def.shape = shape;
 
 		fixture = body.createFixture(def);
-		shape.dispose(); // Do not need it anymore
+//		shape.dispose(); // Do not need it anymore
 	}
 
 	/**
@@ -80,7 +83,7 @@ public class Circle extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeGraphics(Vector2 size) {
+	protected void makeGraphics(Vec2 size) {
 		float[] vertices = makeCircle(size);
 
 		// Triangle fans were removed in XNA 4.0.  Indices are a way around this.
