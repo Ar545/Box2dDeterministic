@@ -35,6 +35,7 @@ allprojects {
         gradlePluginPortal()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+//        maven { url "https://jbox2d.googlecode.com/svn/tags/jbox2d-2.2.1.1/" }
     }
 }
 

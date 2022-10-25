@@ -262,10 +262,9 @@ public class GameplayController {
 			}
             avatar.updateAttractionForce(barrier);
             world.step(miniStep, obstacle_velocity, obstacle_position);
-            System.out.println(Float.floatToRawIntBits(miniStep));
+//            System.out.println(Float.floatToRawIntBits(miniStep));
 
             // TODO: fill in the array
-
             int time = Math.round(car.getPosition().x * 1000 / 3) ;
             if(time < debugArray[0].length){
                 debugArray[isLeft ? 0 : 1][time] = Float.floatToRawIntBits(avatar.getPosition().y);
