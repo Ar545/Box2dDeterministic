@@ -53,6 +53,31 @@ public class Triangle extends Entity {
 		
 		return vertices;
 	}
+
+	/**
+	 * Returns an array of vertices representing an equilateral triangle
+	 *
+	 * This array is used for both physics AND drawing.
+	 *
+	 * @return an array of vertices representing an equilateral triangle
+	 */
+	private Vec2[] makeTriangleVec2(Vec2 size) {
+		Vec2[] vertices = new Vec2[3];
+		float altitude  = (float)Math.sqrt(3) * size.y / 2.0f;
+		float halfWidth = size.x / 2.0f;
+
+//		vertices[0] = -halfWidth;
+//		vertices[1] = altitude / 3.0f;
+		vertices[0] = new Vec2(-halfWidth, altitude / 3.0f);
+//		vertices[2] = 0.0f;
+//		vertices[3] = -2.0f * altitude / 3.0f;
+		vertices[1] = new Vec2(0.0f, -2.0f * altitude / 3.0f);
+//		vertices[4] = halfWidth;
+//		vertices[5] = altitude / 3.0f;
+		vertices[2] = new Vec2(halfWidth, altitude / 3.0f);
+
+		return vertices;
+	}
 	
 	/**
      * Create the collision shape information
@@ -61,7 +86,7 @@ public class Triangle extends Entity {
      */
 	protected void makeFixture(Vec2 size) {
 		shape = new PolygonShape();
-		shape.set(makeTriangle(size));
+		shape.set(makeTriangleVec2(size), 3);
 
 		// Create the fixture
 		FixtureDef def = new FixtureDef();

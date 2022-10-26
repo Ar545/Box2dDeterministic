@@ -61,6 +61,30 @@ public class Ellipse extends Entity {
 		
 		return vertices;
 	}
+
+	/**
+	 * Returns an array of vertices representing an ellipse
+	 *
+	 * This array is used for both physics AND drawing.
+	 *
+	 * @return an array of vertices representing an ellipse
+	 */
+	private Vec2[] makeEllipseVec2(Vec2 size) {
+		// Make the ellipse centered at origin
+		float stepSize = 2*(float)Math.PI / NUM_EDGES;
+
+		Vec2[] vertices = new Vec2[NUM_EDGES];
+		float xRadius = size.x / 2.0f;
+		float yRadius = size.y / 2.0f;
+		for (int ii = 0; ii < NUM_EDGES; ii++) {
+			double angle =  stepSize * ii;
+			float x = (float)Math.cos(angle) * xRadius;
+			float y = (float)Math.sin(angle) * yRadius;
+			vertices[ii] = new Vec2(x, y);
+		}
+
+		return vertices;
+	}
 	
 	/**
      * Create the collision shape information
@@ -69,7 +93,7 @@ public class Ellipse extends Entity {
      */
 	protected void makeFixture(Vec2 size) {
 		shape = new PolygonShape();
-		shape.set(makeEllipse(size));
+		shape.set(makeEllipseVec2(size), NUM_EDGES);
 
 		// Create the fixture
 		FixtureDef def = new FixtureDef();
