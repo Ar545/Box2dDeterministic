@@ -380,6 +380,16 @@ public abstract class Entity {
 //		restitution
 	}
 
+	/** Gravity is proportional to one over radius squared */
+	public void updateDrawBodyAttractionForce(Entity barrier) {
+		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(1/(radius * radius));
+		this.draw_body.applyForceToCenter(directedForce);
+//		restitution
+	}
+
 //	protected abstract void updatePhysics();
 
 }

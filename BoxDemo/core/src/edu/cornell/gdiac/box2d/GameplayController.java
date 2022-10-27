@@ -263,7 +263,7 @@ public class GameplayController {
 			for (Entity e : objects) {
 //				e.updatePhysics();
 			}
-            world.clearForces();
+//            world.clearForces();
             avatar.updateAttractionForce(barrier);
             world.step(miniStep, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
 //            world.clearForces();
@@ -286,7 +286,7 @@ public class GameplayController {
 //			e.updatePhysics();
         }
         draw_world.clearForces();
-        avatar.updateAttractionForce(barrier);
+        avatar.updateDrawBodyAttractionForce(barrier);
         // Step the draw world by the remaining time
         draw_world.step(remainingTime, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
 //        draw_world.clearForces();
