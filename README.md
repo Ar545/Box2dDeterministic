@@ -22,19 +22,21 @@ An free-moving object with full restitution (elasticity = 1) experience a linear
 
 **Indeterministic behavior observed on avatar even though physics are updated on 0.003f(s) steps.**
 
-**Potential source of indeterministic:**
-In short, for each mini step, we take the following 3 actions,
+_**Potential source of indeterministic:**_
+**In short, for each mini step, we take the following 3 actions,**
 - Update forces, momentums, ...
 - Step the world (fixed time)
 - Clear the forces
-However, I found that at some corner cases, during the mini step, before any updates on the forces, the forces are not zero. Therefore, if I take the following 4 actions for each mini step,
-- Clear the forces
-- Update forces, momentums, ...
-- Step the world (fixed time)
-- Clear the forces
-Then my system is running deterministically.
 
-More on the corner cases, for each frame-step that is divided into several mini-step, I'm only able to observe the "uncleared forces" on the very first mini-step. Therefore, I speculate somehow after the last mini-step of each frame-step, the forces are not cleared. 
+**However, I found that at some corner cases, during the mini step, before any updates on the forces, the forces are not zero. Therefore, if I take the following 4 actions for each mini step,**
+- Clear the forces
+- Update forces, momentums, ...
+- Step the world (fixed time)
+- Clear the forces
+
+**Then my system is running deterministically.**
+
+**More on the corner cases, for each frame-step that is divided into several mini-step, I'm only able to observe the "uncleared forces" on the very first mini-step. Therefore, I speculate somehow after the last mini-step of each frame-step, the forces are not cleared. **
 
 Two experiment is undergoing:
 - On main branch:
