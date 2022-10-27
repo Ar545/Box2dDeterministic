@@ -594,7 +594,7 @@ public class World {
    * @param velocityIterations for the velocity constraint solver.
    * @param positionIterations for the position constraint solver.
    */
-  public void step(float dt, int velocityIterations, int positionIterations) {
+  public void step(float dt, int velocityIterations, int positionIterations, int debug) {
     stepTimer.reset();
     tempTimer.reset();
     // log.debug("Starting step");
@@ -632,7 +632,7 @@ public class World {
       m_particleSystem.solve(step); // Particle Simulation
       m_profile.solveParticleSystem.record(tempTimer.getMilliseconds());
       tempTimer.reset();
-      solve(step);
+      solve(step, debug);
       m_profile.solve.record(tempTimer.getMilliseconds());
     }
 
@@ -1060,7 +1060,7 @@ public class World {
   private Body[] stack = new Body[10]; // TODO djm find a good initial stack number;
   private final Timer broadphaseTimer = new Timer();
 
-  private void solve(TimeStep step) {
+  private void solve(TimeStep step, int debug) {
     m_profile.solveInit.startAccum();
     m_profile.solveVelocity.startAccum();
     m_profile.solvePosition.startAccum();
@@ -1187,7 +1187,7 @@ public class World {
           other.m_flags |= Body.e_islandFlag;
         }
       }
-      island.solve(m_profile, step, m_gravity, m_allowSleep);
+      island.solve(m_profile, step, m_gravity, m_allowSleep, debug);
 
       // Post solve cleanup.
       for (int i = 0; i < island.m_bodyCount; ++i) {

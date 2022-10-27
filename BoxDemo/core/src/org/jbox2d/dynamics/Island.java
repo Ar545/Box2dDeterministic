@@ -238,7 +238,16 @@ public class Island {
   private final SolverData solverData = new SolverData();
   private final ContactSolverDef solverDef = new ContactSolverDef();
 
-  public void solve(Profile profile, TimeStep step, Vec2 gravity, boolean allowSleep) {
+  private int leftCount = 0;
+  private int rightCount = 0;
+
+  public void solve(Profile profile, TimeStep step, Vec2 gravity, boolean allowSleep, int debug) {
+
+    if(debug == 0){
+      leftCount ++;
+    }else{
+      rightCount ++;
+    }
 
     // System.out.println("Solving Island");
     float h = step.dt;
@@ -261,6 +270,16 @@ public class Island {
         // v += h * (b.m_gravityScale * gravity + b.m_invMass * b.m_force);
         v.x += h * (b.m_gravityScale * gravity.x + b.m_invMass * b.m_force.x);
         v.y += h * (b.m_gravityScale * gravity.y + b.m_invMass * b.m_force.y);
+        if(v.y != 0.0f){
+          System.out.println("world:" + debug + ",count:" +
+                  (debug == 0 ? leftCount : rightCount) +
+//                  "left:" + leftCount + "right:" + rightCount +
+                  ",v.x = " + Float.floatToRawIntBits(v.x) + ",v.y = " + Float.floatToRawIntBits(v.y)
+                 + ",force.x = " + b.m_force.x +
+                  ",force.y = " + b.m_force.y
+          );
+        }
+
         w += h * b.m_invI * b.m_torque;
 
         // Apply damping.
