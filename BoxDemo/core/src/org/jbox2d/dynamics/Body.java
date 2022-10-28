@@ -488,12 +488,12 @@ public class Body {
     if (isAwake() == false) {
       setAwake(true);
     }
-    if(m_force.y <= 0.5f){
+//    if(m_force.y <= 0.5f){
       m_force.x += force.x;
       m_force.y += force.y;
-    }else{
-      System.out.println("un-cleared force detected and prevented");
-    }
+//    }else{
+//      System.out.println("un-cleared force detected and prevented");
+//    }
 //    m_force.x += force.x;
 //    m_force.y += force.y;
 //    System.out.println("force.y += " + force.y);

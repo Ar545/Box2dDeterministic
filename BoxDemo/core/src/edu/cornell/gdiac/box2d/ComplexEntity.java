@@ -18,38 +18,49 @@
  */
 package edu.cornell.gdiac.box2d;
 
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
-//import com.badlogic.gdx.physics.box2d.*;
-//import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
-import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.joints.Joint;
 
 
 /**
  * Instances represents a single physics object with no Joints.
  */
-public abstract class Entity {
+public abstract class ComplexEntity {
 	// The Box2D information
 	/** The physics body (MOVEMENT) */
 	protected Body body;
+	protected Body leftBody;
+	protected Body rightBody;
+
 	/** The physics body for Box2D drawing. */
 	protected Body draw_body;
-	public void syncBodies() {
-		draw_body.setType(body.getType());
-		draw_body.setTransform(body.getPosition(), body.getAngle());
-//		draw_body.setEnabled(body.isEnabled());
-		draw_body.setAwake(body.isAwake());
-		draw_body.setBullet(body.isBullet());
-		draw_body.setLinearVelocity(body.getLinearVelocity());
-		draw_body.setSleepingAllowed(body.isSleepingAllowed());
-		draw_body.setFixedRotation(body.isFixedRotation());
-		draw_body.setGravityScale(body.getGravityScale());
-		draw_body.setAngularDamping(body.getAngularDamping());
-		draw_body.setLinearDamping(body.getLinearDamping());
+	protected Body draw_leftBody;
+	protected Body draw_rightBody;
+
+	protected Joint joint;
+
+	public void syncBodiesEach(Body corr_draw_body, Body real_body) {
+		corr_draw_body.setType(real_body.getType());
+		corr_draw_body.setTransform(real_body.getPosition(), real_body.getAngle());
+		corr_draw_body.setAwake(real_body.isAwake());
+		corr_draw_body.setBullet(real_body.isBullet());
+		corr_draw_body.setLinearVelocity(real_body.getLinearVelocity());
+		corr_draw_body.setSleepingAllowed(real_body.isSleepingAllowed());
+		corr_draw_body.setFixedRotation(real_body.isFixedRotation());
+		corr_draw_body.setGravityScale(real_body.getGravityScale());
+		corr_draw_body.setAngularDamping(real_body.getAngularDamping());
+		corr_draw_body.setLinearDamping(real_body.getLinearDamping());
 	}
+
+	public void syncBodies(){
+		syncBodiesEach(draw_body, body);
+		syncBodiesEach(draw_leftBody, leftBody);
+		syncBodiesEach(draw_rightBody, rightBody);
+	}
+
 	/** The physics geometry (collisions) */
 	protected Fixture fixture;
 	/** The size (width and height) of the bounding box */
@@ -107,8 +118,8 @@ public abstract class Entity {
 			body.setTransform(value,body.getAngle());
 		}
 	}
-	
-	/** 
+
+	/**
 	 * Returns the Box2D body for this object (MOVEMENT).
 	 *
 	 * This method returns a reference to the body, allowing you
@@ -132,11 +143,11 @@ public abstract class Entity {
 	public Fixture getFixture() {
 		return fixture;
 	}
-	
+
 	/**
 	 * Returns the color of this shape
 	 *
-	 * This method returns a reference to the color object, allowing it 
+	 * This method returns a reference to the color object, allowing it
 	 * to be changed.
 	 *
 	 * @return the color of this shape
@@ -190,19 +201,19 @@ public abstract class Entity {
 	 *
 	 * Together with the shape, the density determines the mass.
 	 *
-	 * @return the density for this object	
+	 * @return the density for this object
 	 */
 	public float getDensity() {
 		return density;
 	}
-	
+
 	/**
 	 * Sets the density for this object
 	 *
 	 * If the fixture already exists, this requires that we reset the
 	 * mass data on the body.
 	 *
-	 * @param value the density for this object	
+	 * @param value the density for this object
 	 */
 	public void setDensity(float value) {
 		density = value;
@@ -211,7 +222,7 @@ public abstract class Entity {
 			body.resetMassData ();
 		}
 	}
-	
+
 	/**
 	 * Returns the shape friction
 	 *
@@ -220,7 +231,7 @@ public abstract class Entity {
 	public float getFriction() {
 		return friction;
 	}
-		 
+
 	/**
 	 * Sets the shape friction
 	 *
@@ -243,7 +254,7 @@ public abstract class Entity {
 	public float getRestitution() {
 		return restitution;
 	}
-		 
+
 	/**
 	 * Sets the shape restitution
 	 *
@@ -261,7 +272,7 @@ public abstract class Entity {
 	/**
 	 * Returns true if the body type is static (not dynamic)
 	 *
-	 * There are actually three body types: Static, Kinematic, 
+	 * There are actually three body types: Static, Kinematic,
 	 * and Dynamic.  But only Static and Dynamic are useful, so
 	 * this is an easy way to go back and forth.
 	 *
@@ -273,7 +284,7 @@ public abstract class Entity {
 
 	/**
 	 * Sets whether the body type is static (if true) or dynamic
-	 * There are actually three body types: Static, Kinematic, 
+	 * There are actually three body types: Static, Kinematic,
 	 * and Dynamic.  But only Static and Dynamic are useful, so
 	 * this is an easy way to go back and forth.
 	 *
@@ -292,12 +303,12 @@ public abstract class Entity {
 			body.setType(BodyType.KINEMATIC);
 		}
 	}
-	
+
 
 	/**
 	 * Creates a new physics object for the given world
 	 */
-	protected Entity() { 
+	protected ComplexEntity() {
 		// No physics until we initialize
 		body = null;
 		draw_body = null;
@@ -371,7 +382,7 @@ public abstract class Entity {
 	protected abstract void makeGraphics(Vec2 size);
 
 	/** Gravity is proportional to one over radius squared */
-	public void updateAttractionForce(Entity barrier) {
+	public void updateAttractionForce(ComplexEntity barrier) {
 		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
 		float radius = directedForce.length();
 		directedForce.normalize();
@@ -381,21 +392,13 @@ public abstract class Entity {
 	}
 
 	/** Gravity is proportional to one over radius squared */
-	public void updateDrawBodyAttractionForce(Entity barrier) {
+	public void updateDrawBodyAttractionForce(ComplexEntity barrier) {
 		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
 		float radius = directedForce.length();
 		directedForce.normalize();
 		directedForce.mul(1/(radius * radius));
 		this.draw_body.applyForceToCenter(directedForce);
 //		restitution
-	}
-
-	public void applyForce(boolean left){
-		this.body.applyForceToCenter(new Vec2(left ? -1.1f : 1.1f, 0));
-	}
-
-	public void applyForceLeft(boolean left){
-		this.draw_body.applyForceToCenter(new Vec2(left ? -1.1f : 1.1f, 0));
 	}
 
 //	protected abstract void updatePhysics();

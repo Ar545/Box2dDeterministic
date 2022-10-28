@@ -42,7 +42,7 @@ public class GameplayController {
     public static final int AVATAR_WIDTH   = 1;
     public static final int AVATAR_HEIGHT  = 1;
     public static final int BARRIER_WIDTH  = 3;
-    public static final int BARRIER_HEIGHT = 1;
+    public static final float BARRIER_HEIGHT = 0.6f;
 
     // For translating the controls
     public static final float MAX_DENSITY = 1000.0f;
@@ -73,6 +73,8 @@ public class GameplayController {
     public Entity avatar;
     /** Static (unmovable) barrier */
     private Entity barrier;
+    /** Static (unmovable) barrier */
+    private Entity secondBarrier;
     /** Kinetic (fixed movement) reference object */
     public Entity car;
     /** Cache object for moving the player */
@@ -153,7 +155,7 @@ public class GameplayController {
         System.out.println("initial-y-pos:" + Float.floatToRawIntBits(position.y));
 
         // Create the barrier
-        position = new Vec2 (size.x / 2, 3 * size.y/4.0f);
+        position = new Vec2 (3 * size.x / 5, 3 * size.y/4.0f);
         barrier = makeEntity(shape);
         barrier.setStatic(true);
         barrier.getColor().set(Color.YELLOW);
@@ -163,6 +165,18 @@ public class GameplayController {
         barrier.setPosition(position);
         barrier.initialize(world, draw_world, new Vec2(BARRIER_WIDTH, BARRIER_HEIGHT));
         objects.add(barrier);
+
+        // Create the second barrier
+        position = new Vec2 (2 * size.x / 5, 3 * size.y/4.0f);
+        secondBarrier = makeEntity(shape);
+        secondBarrier.setStatic(true);
+        secondBarrier.getColor().set(Color.SALMON);
+        secondBarrier.setDensity(density[0]);
+        secondBarrier.setFriction(friction[0]);
+        secondBarrier.setRestitution(restitution[0]);
+        secondBarrier.setPosition(position);
+        secondBarrier.initialize(world, draw_world, new Vec2(BARRIER_WIDTH, BARRIER_HEIGHT));
+        objects.add(secondBarrier);
 
         // Create the reference object
         position = new Vec2 (0, 0);
@@ -265,6 +279,7 @@ public class GameplayController {
 			}
 //            world.clearForces();
             avatar.updateAttractionForce(barrier);
+            avatar.updateAttractionForce(secondBarrier);
             world.step(miniStep, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
 //            world.clearForces();
 //            System.out.println(Float.floatToRawIntBits(miniStep));
@@ -287,6 +302,7 @@ public class GameplayController {
         }
         draw_world.clearForces();
         avatar.updateDrawBodyAttractionForce(barrier);
+        avatar.updateDrawBodyAttractionForce(secondBarrier);
         // Step the draw world by the remaining time
         draw_world.step(remainingTime, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
 //        draw_world.clearForces();
@@ -312,14 +328,17 @@ public class GameplayController {
         if (changeValue(density, inputController.getDensity(), MIN_DENSITY, MAX_DENSITY)) {
             avatar.setDensity(density[0]);
             barrier.setDensity(density[0]);
+            secondBarrier.setDensity(density[0]);
         }
         if (changeValue(friction, inputController.getFriction(), MIN_STICKY, MAX_STICKY)) {
             avatar.setFriction(friction[0]);
             barrier.setFriction(friction[0]);
+            secondBarrier.setFriction(friction[0]);
         }
         if (changeValue (restitution, inputController.getRestitution(), MIN_BOUNCY, MAX_BOUNCY)) {
             avatar.setRestitution(restitution[0]);
             barrier.setRestitution(restitution[0]);
+            secondBarrier.setRestitution(restitution[0]);
         }
 
         // Change the input controls
@@ -405,6 +424,7 @@ public class GameplayController {
         // Draw the shapes.
         avatar.draw(canvas);
         barrier.draw(canvas);
+        secondBarrier.draw(canvas);
         car.draw(canvas);
 
         // Draw the HUD.
@@ -431,6 +451,7 @@ public class GameplayController {
         // Draw the shapes.
         avatar.draw(canvas, offset);
         barrier.draw(canvas, offset);
+        secondBarrier.draw(canvas, offset);
         car.draw(canvas, offset);
 
         // Draw the HUD.
@@ -469,6 +490,16 @@ public class GameplayController {
         // If either object is the avatar, change color
         if (obj1 == avatar || obj2 == avatar) {
             avatar.getColor().set(Color.PURPLE);
+        }
+
+        if((obj1 == avatar && obj2 == barrier)||(obj1 == barrier && obj2 == avatar)){
+            avatar.applyForceLeft(true);
+//            System.out.println("applied left");
+        }
+
+        if((obj1 == avatar && obj2 == secondBarrier)||(obj1 == secondBarrier && obj2 == avatar)){
+            avatar.applyForceLeft(false);
+//            System.out.println("applied right");
         }
     }
 

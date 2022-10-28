@@ -270,7 +270,7 @@ public class Island {
         // v += h * (b.m_gravityScale * gravity + b.m_invMass * b.m_force);
         v.x += h * (b.m_gravityScale * gravity.x + b.m_invMass * b.m_force.x);
         v.y += h * (b.m_gravityScale * gravity.y + b.m_invMass * b.m_force.y);
-        if(v.y != 0.0f){
+        if(v.y != 0.0f && ((leftCount % 1000 == 0 && debug == 0 )||(debug == 1 && rightCount % 1000 == 0))){
           System.out.println("world:" + debug + ",count:" +
                   (debug == 0 ? leftCount : rightCount) +
 //                  "left:" + leftCount + "right:" + rightCount +
