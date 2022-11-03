@@ -41,8 +41,8 @@ public class GameplayController {
     // Default sizes for the model objects
     public static final int AVATAR_WIDTH   = 1;
     public static final int AVATAR_HEIGHT  = 1;
-    public static final int BARRIER_WIDTH  = 3;
-    public static final float BARRIER_HEIGHT = 0.6f;
+    public static final float BARRIER_WIDTH  = 5.655555f;
+    public static final float BARRIER_HEIGHT = 0.1333333f;
 
     // For translating the controls
     public static final float MAX_DENSITY = 1000.0f;
@@ -143,7 +143,7 @@ public class GameplayController {
 
         // Create the player
         Vec2 position = new Vec2(size.x / 2,  size.y / 4.0f);
-        avatar = makeEntity(shape);
+        avatar = makeEntity(2);
         avatar.getColor().set(Color.RED);
         avatar.setDensity(density[0]);
         avatar.setFriction(friction[0]);
@@ -155,7 +155,7 @@ public class GameplayController {
         System.out.println("initial-y-pos:" + Float.floatToRawIntBits(position.y));
 
         // Create the barrier
-        position = new Vec2 (3 * size.x / 5, 3 * size.y/4.0f);
+        position = new Vec2 (5 * size.x / 7, 3 * size.y/4.0f);
         barrier = makeEntity(shape);
         barrier.setStatic(true);
         barrier.getColor().set(Color.YELLOW);
@@ -167,7 +167,7 @@ public class GameplayController {
         objects.add(barrier);
 
         // Create the second barrier
-        position = new Vec2 (2 * size.x / 5, 3 * size.y/4.0f);
+        position = new Vec2 (1.982478f * size.x / 7, 3 * size.y/4.0f);
         secondBarrier = makeEntity(shape);
         secondBarrier.setStatic(true);
         secondBarrier.getColor().set(Color.SALMON);
@@ -280,6 +280,7 @@ public class GameplayController {
 //            world.clearForces();
             avatar.updateAttractionForce(barrier);
             avatar.updateAttractionForce(secondBarrier);
+//            avatar.updateAttractionForce(new Vec2(size.x / 2,3 * size.y/4.0f));
             world.step(miniStep, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
 //            world.clearForces();
 //            System.out.println(Float.floatToRawIntBits(miniStep));
@@ -303,6 +304,7 @@ public class GameplayController {
         draw_world.clearForces();
         avatar.updateDrawBodyAttractionForce(barrier);
         avatar.updateDrawBodyAttractionForce(secondBarrier);
+//        avatar.updateDrawBodyAttractionForce(new Vec2(size.x / 2,3 * size.y/4.0f));
         // Step the draw world by the remaining time
         draw_world.step(remainingTime, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
 //        draw_world.clearForces();
@@ -486,6 +488,14 @@ public class GameplayController {
         Body body2 = contact.getFixtureB().getBody();
         Entity obj1 = (Entity)body1.getUserData();
         Entity obj2 = (Entity)body2.getUserData();
+        boolean real = body1.getWorld().equals(world) && body2.getWorld().equals(world);
+//        if(body1.getWorld().equals(world) && body2.getWorld().equals(world)){
+//            real = true;
+//        }else if(body1.getWorld().equals(draw_world) && body2.getWorld().equals(draw_world)){
+//            real = false;
+//        }else {
+//            System.out.println("collision across world detected!");
+//        }
 
         // If either object is the avatar, change color
         if (obj1 == avatar || obj2 == avatar) {
@@ -493,12 +503,22 @@ public class GameplayController {
         }
 
         if((obj1 == avatar && obj2 == barrier)||(obj1 == barrier && obj2 == avatar)){
-            avatar.applyForceLeft(true);
+            if(real){
+                avatar.applyForceReal(true);
+                System.out.println("collision with right, real left force applied");
+            }else {
+                avatar.applyForceDraw(true);
+            }
 //            System.out.println("applied left");
         }
 
         if((obj1 == avatar && obj2 == secondBarrier)||(obj1 == secondBarrier && obj2 == avatar)){
-            avatar.applyForceLeft(false);
+            if (real) {
+                avatar.applyForceReal(false);
+                System.out.println("collision with left, real right force applied!");
+            }else{
+                avatar.applyForceDraw(false);
+            }
 //            System.out.println("applied right");
         }
     }

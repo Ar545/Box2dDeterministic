@@ -375,7 +375,7 @@ public abstract class Entity {
 		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
 		float radius = directedForce.length();
 		directedForce.normalize();
-		directedForce.mul(1/(radius * radius));
+		directedForce.mul(1/(radius * radius)).add(new Vec2(0, -0.00033333f));
 		this.body.applyForceToCenter(directedForce);
 //		restitution
 	}
@@ -385,17 +385,35 @@ public abstract class Entity {
 		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
 		float radius = directedForce.length();
 		directedForce.normalize();
-		directedForce.mul(1/(radius * radius));
+		directedForce.mul(1/(radius * radius)).add(new Vec2(0, -0.00044444f));
 		this.draw_body.applyForceToCenter(directedForce);
 //		restitution
 	}
 
-	public void applyForce(boolean left){
-		this.body.applyForceToCenter(new Vec2(left ? -1.1f : 1.1f, 0));
+	public void updateAttractionForce(Vec2 pos){
+		Vec2 directedForce = pos.sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(0.000111f/(radius * radius)).add(new Vec2(0, 0.00033333f));
+		this.body.applyForceToCenter(directedForce);
+//		this.body.applyLinearImpulse(directedForce, this.body.getWorldCenter(), true);
 	}
 
-	public void applyForceLeft(boolean left){
-		this.draw_body.applyForceToCenter(new Vec2(left ? -1.1f : 1.1f, 0));
+	public void updateDrawBodyAttractionForce(Vec2 pos){
+		Vec2 directedForce = pos.sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(0.000111f/(radius * radius)).add(new Vec2(0, 0.00033333f));
+		this.draw_body.applyForceToCenter(directedForce);
+//		this.draw_body.applyLinearImpulse(directedForce, this.draw_body.getWorldCenter(), true);
+	}
+
+	public void applyForceReal(boolean left){
+		this.body.applyForceToCenter(new Vec2(left ? -1.1111111f : 1.11111111f, left ? -0.1111112f : -0.1111108f));
+	}
+
+	public void applyForceDraw(boolean left){
+		this.draw_body.applyForceToCenter(new Vec2(left ? -1.1111111f : 1.11111111f, left ? -0.1111112f : -0.1111108f));
 	}
 
 //	protected abstract void updatePhysics();
