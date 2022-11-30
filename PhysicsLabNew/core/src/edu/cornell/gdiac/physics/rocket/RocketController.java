@@ -24,6 +24,8 @@ import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.*;
 import edu.cornell.gdiac.physics.obstacle.*;
 
+import java.util.Iterator;
+
 /**
  * Gameplay specific controller for the rocket lander game.
  *
@@ -245,13 +247,46 @@ public class RocketController extends WorldController implements ContactListener
 		//#region INSERT CODE HERE
 		// Read from the input and add the force to the rocket model
 		// Then apply the force using the method you modified in RocketObject
-
+		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
+		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
+		rocket.applyForce();
 		//#endregion
 		
 	    // Animate the three burners
 	    updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
 	    updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
 	    updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+	}
+
+	/**
+	 * Processes physics in the new deterministic way
+	 * @param dt	Number of seconds since last animation frame
+	 */
+	@Override
+	public void postUpdate(float dt) {
+		// Add any objects created by actions
+		while (!addQueue.isEmpty()) {
+			addObject(addQueue.poll());
+		}
+
+		// Turn the physics engine crank.
+		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+
+		// Garbage collect the deleted objects.
+		// Note how we use the linked list nodes to delete O(1) in place.
+		// This is O(n) without copying.
+		Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
+		while (iterator.hasNext()) {
+			PooledList<Obstacle>.Entry entry = iterator.next();
+			Obstacle obj = entry.getValue();
+			if (obj.isRemoved()) {
+				obj.deactivatePhysics(world);
+				entry.remove();
+			} else {
+				// Note that update is called last!
+				obj.update(dt);
+			}
+		}
 	}
 	
 	/**
