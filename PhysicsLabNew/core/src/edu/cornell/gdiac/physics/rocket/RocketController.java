@@ -247,15 +247,21 @@ public class RocketController extends WorldController implements ContactListener
 		//#region INSERT CODE HERE
 		// Read from the input and add the force to the rocket model
 		// Then apply the force using the method you modified in RocketObject
-		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
-		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
-		rocket.applyForce();
+//		applyForceToRocket();
 		//#endregion
 		
 	    // Animate the three burners
-	    updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
-	    updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
-	    updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+//	    updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+//	    updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+//	    updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+	}
+
+	/** apply force to the rocket */
+	private void applyForceToRocket() {
+		//world.clearForces();
+		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
+		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
+		rocket.applyForce();
 	}
 
 	/**
@@ -270,7 +276,8 @@ public class RocketController extends WorldController implements ContactListener
 		}
 
 		// Turn the physics engine crank.
-		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+//		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+		ProcessPhysics(dt);
 
 		// Garbage collect the deleted objects.
 		// Note how we use the linked list nodes to delete O(1) in place.
@@ -288,11 +295,34 @@ public class RocketController extends WorldController implements ContactListener
 			}
 		}
 	}
+
+	float remainingTime = 0f;
+	float miniStep = 0.003f;
+
+	/** Turn the physics engine crank. */
+	private void ProcessPhysics(float dt) {
+//		System.out.println("dt is "+ dt);
+
+		// The total time needed to simulate
+		float totalTime = remainingTime + dt;
+		// The total sim time (needed for obj->update)
+		while (totalTime > miniStep) {
+			// apply all forces
+			applyForceToRocket();
+			// release all forces through step
+			world.step(miniStep, WORLD_VELOC, WORLD_POSIT);
+			totalTime -= miniStep;
+		}
+		// update the graphics for the total sim time
+		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+	}
 	
 	/**
 	 * Updates that animation for a single burner
 	 *
-	 * This method is here instead of the the rocket model because of our philosophy
+	 * This method is here instead of the rocket model because of our philosophy
 	 * that models should always be lightweight.  Animation includes sounds and other
 	 * assets that we do not want to process in the model
 	 *
