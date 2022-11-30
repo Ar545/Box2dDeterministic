@@ -978,7 +978,7 @@ public abstract class Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) { 
 	}
@@ -989,6 +989,12 @@ public abstract class Obstacle {
 	 * @param canvas Drawing context
 	 */
 	public abstract void draw(GameCanvas canvas);
+
+	/**
+	 * Draws the texture physics object with the velocity time offset
+	 * @param canvas Drawing context
+	 */
+	public abstract void draw(GameCanvas canvas, float velocityTimeOffset);
 
 	/**
 	 * Draws the outline of the physics body.

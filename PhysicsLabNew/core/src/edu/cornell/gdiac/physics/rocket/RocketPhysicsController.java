@@ -10,19 +10,22 @@
  */
 package edu.cornell.gdiac.physics.rocket;
 
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.assets.*;
-import com.badlogic.gdx.audio.*;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Queue;
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.physics.*;
-import edu.cornell.gdiac.physics.obstacle.*;
+import edu.cornell.gdiac.physics.InputController;
+import edu.cornell.gdiac.physics.WorldController;
+import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
+import edu.cornell.gdiac.physics.obstacle.Obstacle;
+import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
+import edu.cornell.gdiac.util.PooledList;
+import edu.cornell.gdiac.util.RandomController;
 
 import java.util.Iterator;
 
@@ -35,7 +38,7 @@ import java.util.Iterator;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class RocketController extends WorldController implements ContactListener {
+public class RocketPhysicsController extends WorldController implements ContactListener {
 	/** Texture assets for the rocket */
 	private TextureRegion rocketTexture;
 	/** Texture filmstrip for the main afterburner */
@@ -80,7 +83,7 @@ public class RocketController extends WorldController implements ContactListener
 	 *
 	 * The game has default gravity and other settings
 	 */
-	public RocketController() {
+	public RocketPhysicsController() {
 		bumpIds = new Queue<Long>();
 		setDebug(false);
 		setComplete(false);
@@ -247,13 +250,13 @@ public class RocketController extends WorldController implements ContactListener
 		//#region INSERT CODE HERE
 		// Read from the input and add the force to the rocket model
 		// Then apply the force using the method you modified in RocketObject
-		applyForceToRocket();
+//		applyForceToRocket();
 		//#endregion
 		
 	    // Animate the three burners
-	    updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
-	    updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
-	    updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+//	    updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+//	    updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+//	    updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
 	}
 
 	/** apply force to the rocket */
@@ -276,8 +279,8 @@ public class RocketController extends WorldController implements ContactListener
 		}
 
 		// Turn the physics engine crank.
-		world.step(dt, WORLD_VELOC, WORLD_POSIT);
-//		ProcessPhysics(dt);
+//		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+		ProcessPhysics(dt);
 
 		// Garbage collect the deleted objects.
 		// Note how we use the linked list nodes to delete O(1) in place.
@@ -296,26 +299,25 @@ public class RocketController extends WorldController implements ContactListener
 		}
 	}
 
-//	float remainingTime = 0f;
-//	float miniStep = 0.003f;
-//
-//	/** Turn the physics engine crank. */
-//	private void ProcessPhysics(float dt) {
-//		// The total time needed to simulate
-//		float totalTime = remainingTime + dt;
-//		// The total sim time (needed for obj->update)
-//		while (totalTime > miniStep) {
-//			// apply all forces
-//			applyForceToRocket();
-//			// release all forces through step
-//			world.step(miniStep, WORLD_VELOC, WORLD_POSIT);
-//			totalTime -= miniStep;
-//		}
-//		// update the graphics for the total sim time
-//		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
-//		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
-//		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
-//	}
+	/** Turn the physics engine crank. */
+	private void ProcessPhysics(float dt) {
+//		System.out.println("dt is "+ dt);
+
+		// The total time needed to simulate
+		float totalTime = remainingTime + dt;
+		// The total sim time (needed for obj->update)
+		while (totalTime > miniStep) {
+			// apply all forces
+			applyForceToRocket();
+			// release all forces through step
+			world.step(miniStep, WORLD_VELOC, WORLD_POSIT);
+			totalTime -= miniStep;
+		}
+		// update the graphics for the total sim time
+		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+	}
 	
 	/**
 	 * Updates that animation for a single burner

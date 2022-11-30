@@ -779,6 +779,19 @@ public abstract class SimpleObstacle extends Obstacle {
 			canvas.draw(texture,Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
 		}
 	}
+
+	/**
+	 * Draws the texture physics object with the velocity time offset
+	 * @param canvas Drawing context
+	 * @param velocityTimeOffset the time remaining. body should be drawn with the offset of this time times body's velocity
+	 */
+	public void draw(GameCanvas canvas, float velocityTimeOffset) {
+		Vector2 offset = body.getLinearVelocity().cpy().scl(velocityTimeOffset);
+		if (texture != null) {
+			canvas.draw(texture, Color.WHITE, origin.x, origin.y, (getX() + offset.x) * drawScale.x,
+					(getY() + offset.y) * drawScale.x, getAngle(), 1, 1);
+		}
+	}
 	
 	/**
 	 * Returns the Box2D body for this object.
@@ -877,7 +890,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) {
 		// Recreate the fixture object if dimensions changed.

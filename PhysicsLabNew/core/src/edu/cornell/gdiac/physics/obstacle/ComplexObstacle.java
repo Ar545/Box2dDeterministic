@@ -1020,7 +1020,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) {
 		// Delegate to components
@@ -1060,6 +1060,19 @@ public abstract class ComplexObstacle extends Obstacle {
 			obj.draw(canvas);
 		}
 	}
+
+	/**
+	 * Draws the texture physics object with the velocity time offset
+	 * @param canvas Drawing context
+	 * @param velocityTimeOffset the time remaining. body should be drawn with the offset of this time times body's velocity
+	 */
+	public void draw(GameCanvas canvas, float velocityTimeOffset) {
+		// Delegate to components
+		for(Obstacle obj : bodies) {
+			obj.draw(canvas, velocityTimeOffset);
+		}
+	}
+
 
 	/**
 	 * Draws the outline of the physics body.

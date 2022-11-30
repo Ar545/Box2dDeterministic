@@ -46,6 +46,14 @@ import edu.cornell.gdiac.physics.obstacle.*;
  * place nicely with the static assets.
  */
 public abstract class WorldController implements Screen {
+	/** The velocity offset in VELOCITY_WORLD */
+	public float remainingTime = 0f;
+	/** the fixed physics time step */
+	public final float miniStep = 0.003f;
+	/** if true, all objects in world should be drawn with velocity offset */
+	public boolean VELOCITY_WORLD = false;
+	/** if true, all objects in the world should be drawn with the draw body */
+	public boolean DOUBLE_WORLD = false;
 	/** The texture for walls and platforms */
 	protected TextureRegion earthTile;
 	/** The texture for the exit condition */
@@ -454,7 +462,11 @@ public abstract class WorldController implements Screen {
 		
 		canvas.begin();
 		for(Obstacle obj : objects) {
-			obj.draw(canvas);
+			if(VELOCITY_WORLD){
+				obj.draw(canvas, remainingTime);
+			}else{
+				obj.draw(canvas);
+			}
 		}
 		canvas.end();
 		
