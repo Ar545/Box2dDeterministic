@@ -109,19 +109,20 @@ public class RagdollController extends WorldController {
 		super.reset();
 		setComplete(false);
 		setFailure(false);
-		populateLevel();
+		populateLevel(real);
+		populateLevel(compare);
 	}
 
 	/**
 	 * Lays out the game geography.
 	 */
-	private void populateLevel() {
+	private void populateLevel(WorldBenchmark wb) {
 		// Make the ragdoll
 		ragdoll = new RagdollModel(constants);
 		ragdoll.setDrawScale(scale.x,scale.y);
 		ragdoll.setPartTextures(bodyTextures);
 		ragdoll.getBubbleGenerator().setTexture(bubbleTexture);
-		addObject(ragdoll);
+		addObject(wb, ragdoll);
 
 		// Create ground pieces
 		PolygonObstacle obj;
@@ -135,7 +136,7 @@ public class RagdollController extends WorldController {
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall1");
-		addObject(obj);
+		addObject(wb, obj);
 
 		obj = new PolygonObstacle(walljv.get(1).asFloatArray(), 0, 0);
 		obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -145,7 +146,7 @@ public class RagdollController extends WorldController {
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall2");
-		addObject(obj);
+		addObject(wb, obj);
 
 		selector = new ObstacleSelector(real.world);
 		selector.setTexture(crosshairTexture);

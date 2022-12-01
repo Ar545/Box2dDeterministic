@@ -112,13 +112,14 @@ public class PlatformController extends WorldController implements ContactListen
 		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
-		populateLevel();
+		populateLevel(real);
+		populateLevel(compare);
 	}
 
 	/**
 	 * Lays out the game geography.
 	 */
-	private void populateLevel() {
+	private void populateLevel(WorldBenchmark wb) {
 		// Add level goal
 		float dwidth  = goalTile.getRegionWidth()/scale.x;
 		float dheight = goalTile.getRegionHeight()/scale.y;
@@ -134,7 +135,7 @@ public class PlatformController extends WorldController implements ContactListen
 		goalDoor.setDrawScale(scale);
 		goalDoor.setTexture(goalTile);
 		goalDoor.setName("goal");
-		addObject(goalDoor);
+		addObject(wb, goalDoor);
 
 	    String wname = "wall";
 	    JsonValue walljv = constants.get("walls");
@@ -149,7 +150,7 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setDrawScale(scale);
 			obj.setTexture(earthTile);
 			obj.setName(wname+ii);
-			addObject(obj);
+			addObject(wb, obj);
 	    }
 	    
 	    String pname = "platform";
@@ -164,7 +165,7 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setDrawScale(scale);
 			obj.setTexture(earthTile);
 			obj.setName(pname+ii);
-			addObject(obj);
+			addObject(wb, obj);
 	    }
 
 	    // This world is heavier
@@ -177,7 +178,7 @@ public class PlatformController extends WorldController implements ContactListen
 		avatar = new DudeModel(constants.get("dude"), dwidth, dheight);
 		avatar.setDrawScale(scale);
 		avatar.setTexture(avatarTexture);
-		addObject(avatar);
+		addObject(wb, avatar);
 
 		// Create rope bridge
 		dwidth  = bridgeTexture.getRegionWidth()/scale.x;
@@ -185,7 +186,7 @@ public class PlatformController extends WorldController implements ContactListen
 		RopeBridge bridge = new RopeBridge(constants.get("bridge"), dwidth, dheight);
 		bridge.setTexture(bridgeTexture);
 		bridge.setDrawScale(scale);
-		addObject(bridge);
+		addObject(wb, bridge);
 		
 		// Create spinning platform
 		dwidth  = barrierTexture.getRegionWidth()/scale.x;
@@ -193,7 +194,7 @@ public class PlatformController extends WorldController implements ContactListen
 		Spinner spinPlatform = new Spinner(constants.get("spinner"),dwidth,dheight);
 		spinPlatform.setDrawScale(scale);
 		spinPlatform.setTexture(barrierTexture);
-		addObject(spinPlatform);
+		addObject(wb, spinPlatform);
 
 		volume = constants.getFloat("volume", 1.0f);
 	}

@@ -76,8 +76,12 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	private JsonValue constants;
 	/** Reference to the goalDoor (for collision detection) */
 	private BoxObstacle goalDoor;
+	/** Reference to the goalDoor (for collision detection) */
+	private BoxObstacle goalDoor_benchmark;
 	/** Reference to the rocket/player avatar */
 	private RocketModel rocket;
+	/** Reference to the rocket/player avatar */
+	private RocketModel rocket_benchmark;
 
 	/**
 	 * Creates and initialize a new instance of the rocket lander game
@@ -129,20 +133,21 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
-		populateLevel();
+		populateLevel(real);
+		populateLevel(compare);
 	}
 
 	/**
 	 * Lays out the game geography.
 	 */
-	private void populateLevel() {
+	private void populateLevel(WorldBenchmark wb) {
 		// Add level goal
 		float dwidth  = goalTile.getRegionWidth()/scale.x;
 		float dheight = goalTile.getRegionHeight()/scale.y;
 
 		JsonValue goal = constants.get("goal");
 		JsonValue goalpos = goal.get("pos");
-		goalDoor = new BoxObstacle(goalpos.getFloat(0),goalpos.getFloat(1),dwidth,dheight);
+		BoxObstacle goalDoor = new BoxObstacle(goalpos.getFloat(0),goalpos.getFloat(1),dwidth,dheight);
 		goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
 		goalDoor.setDensity(goal.getFloat("density", 0));
 		goalDoor.setFriction(goal.getFloat("friction", 0));
@@ -151,7 +156,13 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		goalDoor.setDrawScale(scale);
 		goalDoor.setTexture(goalTile);
 		goalDoor.setName("goal");
-		addObject(goalDoor);
+		addObject(wb, goalDoor);
+
+		if(wb == real){
+			this.goalDoor = goalDoor;
+		}else{
+			this.goalDoor_benchmark = goalDoor;
+		}
 
 		// Create ground pieces
 		PolygonObstacle obj;
@@ -165,7 +176,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall1");
-		addObject(obj);
+		addObject(wb, obj);
 
 		obj = new PolygonObstacle(walljv.get(1).asFloatArray(), 0, 0);
 		obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -175,7 +186,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall2");
-		addObject(obj);
+		addObject(wb, obj);
 
 		obj = new PolygonObstacle(walljv.get(2).asFloatArray(), 0, 0);
 		obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -185,7 +196,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall3");
-		addObject(obj);
+		addObject(wb, obj);
 
 		// Create the pile of boxes
 		JsonValue boxjv = constants.get("boxes");
@@ -202,25 +213,31 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 			box.setName("crate"+id);
 			box.setDrawScale(scale);
 			box.setTexture(texture);
-			addObject(box);
+			addObject(wb, box);
 		}
 
 		// Create the rocket avatar
 		dwidth  = rocketTexture.getRegionWidth()/scale.x;
 		dheight = rocketTexture.getRegionHeight()/scale.y;
 		JsonValue rockjv = constants.get("rocket");
-		rocket = new RocketModel(rockjv, dwidth, dheight);
+		RocketModel rocket = new RocketModel(rockjv, dwidth, dheight);
 		rocket.setDrawScale(scale);
 		rocket.setTexture(rocketTexture);
-	    rocket.setBurnerStrip(RocketModel.Burner.MAIN,  mainTexture);
-	    rocket.setBurnerStrip(RocketModel.Burner.LEFT,  leftTexture);
-	    rocket.setBurnerStrip(RocketModel.Burner.RIGHT, rghtTexture);
-	  
-	    // Add the sound names
-	    rocket.setBurnerSound(RocketModel.Burner.MAIN,  burnSound);
-	    rocket.setBurnerSound(RocketModel.Burner.LEFT,  leftSound);
-	    rocket.setBurnerSound(RocketModel.Burner.RIGHT, rghtSound);
-		addObject(rocket);
+		rocket.setBurnerStrip(RocketModel.Burner.MAIN,  mainTexture);
+		rocket.setBurnerStrip(RocketModel.Burner.LEFT,  leftTexture);
+		rocket.setBurnerStrip(RocketModel.Burner.RIGHT, rghtTexture);
+
+		// Add the sound names
+		rocket.setBurnerSound(RocketModel.Burner.MAIN,  burnSound);
+		rocket.setBurnerSound(RocketModel.Burner.LEFT,  leftSound);
+		rocket.setBurnerSound(RocketModel.Burner.RIGHT, rghtSound);
+		addObject(wb, rocket);
+
+		if(wb == real){
+			this.rocket = rocket;
+		}else{
+			this.rocket_benchmark = rocket;
+		}
 
 		burnVol = defaults.getFloat("volume", 1);
 		bumpVol = constants.get("collisions").getFloat( "volume", 1 );;
@@ -253,7 +270,8 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	}
 
 	/** apply force to the rocket */
-	private void applyForceToRocket() {
+	private void applyForceToRocket(WorldBenchmark wb) {
+		RocketModel rocket = wb == real ? this.rocket : this.rocket_benchmark;
 		//world.clearForces();
 		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
 		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
@@ -273,7 +291,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	private void doublePostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
 		while (!wb.addQueue.isEmpty()) {
-			addObject(wb.addQueue.poll());
+			addObject(wb, wb.addQueue.poll());
 		}
 
 		// Turn the physics engine crank.
@@ -307,7 +325,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		// The total sim time (needed for obj->update)
 		while (totalTime > miniStep) {
 			// apply all forces
-			applyForceToRocket();
+			applyForceToRocket(wb);
 			// release all forces through step
 			wb.world.step(miniStep, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
 			totalTime -= miniStep;

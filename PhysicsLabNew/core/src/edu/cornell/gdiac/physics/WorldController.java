@@ -302,16 +302,16 @@ public abstract class WorldController implements Screen {
 		compare.addQueuedObject(obj);
 	}
 
-	/**
-	 * Immediately adds the object to the physics world
-	 *
-	 * param obj The object to add
-	 */
-	protected void addObject(Obstacle obj) {
-		assert inBounds(obj) : "Object is not in bounds";
-		real.addObject(obj);
-		compare.addObject(obj);
-	}
+//	/**
+//	 * Immediately adds the object to the physics world
+//	 *
+//	 * param obj The object to add
+//	 */
+//	protected void addObject(Obstacle obj) {
+//		assert inBounds(obj) : "Object is not in bounds";
+//		real.addObject(obj);
+//		compare.addObject(obj);
+//	}
 
 	/**
 	 * Immediately adds the object to the physics world
