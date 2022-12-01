@@ -76,7 +76,7 @@ public class PlatformController extends WorldController implements ContactListen
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
-		world.setContactListener(this);
+		real.world.setContactListener(this);
 		sensorFixtures = new ObjectSet<Fixture>();
 	}
 
@@ -108,17 +108,8 @@ public class PlatformController extends WorldController implements ContactListen
 	 * This method disposes of the world and creates a new one.
 	 */
 	public void reset() {
-		Vector2 gravity = new Vector2(world.getGravity() );
-		
-		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
-		}
-		objects.clear();
-		addQueue.clear();
-		world.dispose();
-		
-		world = new World(gravity,false);
-		world.setContactListener(this);
+		super.reset();
+		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
 		populateLevel();
@@ -177,7 +168,8 @@ public class PlatformController extends WorldController implements ContactListen
 	    }
 
 	    // This world is heavier
-		world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
+		real.world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
+		compare.world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
 
 		// Create dude
 		dwidth  = avatarTexture.getRegionWidth()/scale.x;

@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Queue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.physics.InputController;
+import edu.cornell.gdiac.physics.WorldBenchmark;
 import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
 import edu.cornell.gdiac.physics.obstacle.Obstacle;
@@ -28,6 +29,8 @@ import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.RandomController;
 
 import java.util.Iterator;
+
+import static edu.cornell.gdiac.physics.WorldBenchmark.WORLD_VELOC;
 
 /**
  * Gameplay specific controller for the rocket lander game.
@@ -88,7 +91,7 @@ public class RocketPhysicsController extends WorldController implements ContactL
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
-		world.setContactListener(this);
+		real.world.setContactListener(this);
 	}
 
 	/**
@@ -123,17 +126,8 @@ public class RocketPhysicsController extends WorldController implements ContactL
 	 * This method disposes of the world and creates a new one.
 	 */
 	public void reset() {
-		Vector2 gravity = new Vector2(world.getGravity() );
-		
-		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
-		}
-		objects.clear();
-		addQueue.clear();
-		world.dispose();
-		
-		world = new World(gravity,false);
-		world.setContactListener(this);
+		super.reset();
+		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
 		populateLevel();
@@ -273,24 +267,29 @@ public class RocketPhysicsController extends WorldController implements ContactL
 	 */
 	@Override
 	public void postUpdate(float dt) {
+		physicsPostUpdate(real, dt);
+		physicsPostUpdate(compare, dt);
+	}
+
+	private void physicsPostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
-		while (!addQueue.isEmpty()) {
-			addObject(addQueue.poll());
+		while (!wb.addQueue.isEmpty()) {
+			addObject(wb.addQueue.poll());
 		}
 
 		// Turn the physics engine crank.
 //		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
-		ProcessPhysics(dt);
+		ProcessPhysics(wb, dt);
 
 		// Garbage collect the deleted objects.
 		// Note how we use the linked list nodes to delete O(1) in place.
 		// This is O(n) without copying.
-		Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
+		Iterator<PooledList<Obstacle>.Entry> iterator = wb.objects.entryIterator();
 		while (iterator.hasNext()) {
 			PooledList<Obstacle>.Entry entry = iterator.next();
 			Obstacle obj = entry.getValue();
 			if (obj.isRemoved()) {
-				obj.deactivatePhysics(world);
+				obj.deactivatePhysics(wb.world);
 				entry.remove();
 			} else {
 				// Note that update is called last!
@@ -300,7 +299,7 @@ public class RocketPhysicsController extends WorldController implements ContactL
 	}
 
 	/** Turn the physics engine crank. */
-	private void ProcessPhysics(float dt) {
+	private void ProcessPhysics(WorldBenchmark wb, float dt) {
 //		System.out.println("dt is "+ dt);
 
 		// The total time needed to simulate
@@ -310,7 +309,7 @@ public class RocketPhysicsController extends WorldController implements ContactL
 			// apply all forces
 			applyForceToRocket();
 			// release all forces through step
-			world.step(miniStep, WORLD_VELOC, WORLD_POSIT);
+			wb.world.step(miniStep, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
 			totalTime -= miniStep;
 		}
 		// update the graphics for the total sim time

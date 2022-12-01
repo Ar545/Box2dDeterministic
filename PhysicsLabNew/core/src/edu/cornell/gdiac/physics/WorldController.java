@@ -70,12 +70,7 @@ public abstract class WorldController implements Screen {
     /** How many frames after winning/losing do we continue? */
 	public static final int EXIT_COUNT = 120;
 
-	/** The amount of time for a physics engine step. */
-	public static final float WORLD_STEP = 1/60.0f;
-	/** Number of velocity iterations for the constrain solvers */
-	public static final int WORLD_VELOC = 6;
-	/** Number of position iterations for the constrain solvers */
-	public static final int WORLD_POSIT = 2;
+
 	
 	/** Width of the game world in Box2d units */
 	protected static final float DEFAULT_WIDTH  = 32.0f;
@@ -86,15 +81,15 @@ public abstract class WorldController implements Screen {
 	
 	/** Reference to the game canvas */
 	protected GameCanvas canvas;
-	/** All the objects in the world. */
-	protected PooledList<Obstacle> objects  = new PooledList<Obstacle>();
-	/** Queue for adding objects */
-	protected PooledList<Obstacle> addQueue = new PooledList<Obstacle>();
+
 	/** Listener that will update the player mode when we are done */
 	private ScreenListener listener;
 
-	/** The Box2D world */
-	protected World world;
+
+	/** The benchmark Box2D world, use to test whether the physics are deterministic */
+	public WorldBenchmark compare;
+	/** The real Box2d world */
+	public WorldBenchmark real;
 	/** The boundary of the world */
 	protected Rectangle bounds;
 	/** The world scale */
@@ -255,7 +250,8 @@ public abstract class WorldController implements Screen {
 	 * @param gravity	The gravitational force on this Box2d world
 	 */
 	protected WorldController(Rectangle bounds, Vector2 gravity) {
-		world = new World(gravity,false);
+		real = new WorldBenchmark(gravity);
+		compare = new WorldBenchmark(gravity);
 		this.bounds = new Rectangle(bounds);
 		this.scale = new Vector2(1,1);
 		complete = false;
@@ -269,17 +265,10 @@ public abstract class WorldController implements Screen {
 	 * Dispose of all (non-static) resources allocated to this mode.
 	 */
 	public void dispose() {
-		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
-		}
-		objects.clear();
-		addQueue.clear();
-		world.dispose();
-		objects = null;
-		addQueue = null;
+		real.dispose();
+		compare.dispose();
 		bounds = null;
 		scale  = null;
-		world  = null;
 		canvas = null;
 	}
 
@@ -309,7 +298,8 @@ public abstract class WorldController implements Screen {
 	 */
 	public void addQueuedObject(Obstacle obj) {
 		assert inBounds(obj) : "Object is not in bounds";
-		addQueue.add(obj);
+		real.addQueuedObject(obj);
+		compare.addQueuedObject(obj);
 	}
 
 	/**
@@ -319,8 +309,17 @@ public abstract class WorldController implements Screen {
 	 */
 	protected void addObject(Obstacle obj) {
 		assert inBounds(obj) : "Object is not in bounds";
-		objects.add(obj);
-		obj.activatePhysics(world);
+		real.addObject(obj);
+		compare.addObject(obj);
+	}
+
+	/**
+	 * Immediately adds the object to the physics world
+	 * @param obj The object to add
+	 */
+	protected void addObject(WorldBenchmark wb, Obstacle obj) {
+		assert inBounds(obj) : "Object is not in bounds";
+		wb.addObject(obj);
 	}
 
 	/**
@@ -337,14 +336,17 @@ public abstract class WorldController implements Screen {
 		boolean vert  = (bounds.y <= obj.getY() && obj.getY() <= bounds.y+bounds.height);
 		return horiz && vert;
 	}
-	
+
 	/**
 	 * Resets the status of the game so that we can play again.
-	 *
+	 * <p>
 	 * This method disposes of the world and creates a new one.
 	 */
-	public abstract void reset();
-	
+	public void reset() {
+		real.reset();
+		compare.reset();
+	}
+
 	/**
 	 * Returns whether to process the update loop
 	 *
@@ -422,29 +424,8 @@ public abstract class WorldController implements Screen {
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public void postUpdate(float dt) {
-		// Add any objects created by actions
-		while (!addQueue.isEmpty()) {
-			addObject(addQueue.poll());
-		}
-		
-		// Turn the physics engine crank.
-		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
-
-		// Garbage collect the deleted objects.
-		// Note how we use the linked list nodes to delete O(1) in place.
-		// This is O(n) without copying.
-		Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
-		while (iterator.hasNext()) {
-			PooledList<Obstacle>.Entry entry = iterator.next();
-			Obstacle obj = entry.getValue();
-			if (obj.isRemoved()) {
-				obj.deactivatePhysics(world);
-				entry.remove();
-			} else {
-				// Note that update is called last!
-				obj.update(dt);
-			}
-		}
+		real.postUpdate(dt);
+		compare.postUpdate(dt);
 	}
 	
 	/**
@@ -461,7 +442,8 @@ public abstract class WorldController implements Screen {
 		canvas.clear();
 		
 		canvas.begin();
-		for(Obstacle obj : objects) {
+		for(Obstacle obj : real.objects) {
+			// TODO: override draw() in velocity world
 			if(VELOCITY_WORLD){
 				obj.draw(canvas, remainingTime);
 			}else{
@@ -472,7 +454,7 @@ public abstract class WorldController implements Screen {
 		
 		if (debug) {
 			canvas.beginDebug();
-			for(Obstacle obj : objects) {
+			for(Obstacle obj : real.objects) {
 				obj.drawDebug(canvas);
 			}
 			canvas.endDebug();

@@ -106,16 +106,7 @@ public class RagdollController extends WorldController {
 	 * This method disposes of the world and creates a new one.
 	 */
 	public void reset() {
-		Vector2 gravity = new Vector2(world.getGravity() );
-		
-		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
-		}
-		objects.clear();
-		addQueue.clear();
-		world.dispose();
-		
-		world = new World(gravity,false);
+		super.reset();
 		setComplete(false);
 		setFailure(false);
 		populateLevel();
@@ -156,10 +147,11 @@ public class RagdollController extends WorldController {
 		obj.setName("wall2");
 		addObject(obj);
 
-		selector = new ObstacleSelector(world);
+		selector = new ObstacleSelector(real.world);
 		selector.setTexture(crosshairTexture);
 		selector.setDrawScale(scale);
-		world.setGravity( new Vector2(0, defaults.getFloat( "gravity", 0 )) );
+		real.world.setGravity( new Vector2(0, defaults.getFloat( "gravity", 0 )) );
+		compare.world.setGravity( new Vector2(0, defaults.getFloat( "gravity", 0 )) );
 	}
 
 	/**
@@ -207,14 +199,14 @@ public class RagdollController extends WorldController {
 		canvas.end();
 		
 		canvas.begin();
-		for(Obstacle obj : objects) {
+		for(Obstacle obj : real.objects) {
 			obj.draw(canvas);
 		}
 		canvas.end();
 		
 		if (isDebug()) {
 			canvas.beginDebug();
-			for(Obstacle obj : objects) {
+			for(Obstacle obj : real.objects) {
 				obj.drawDebug(canvas);
 			}
 			canvas.endDebug();

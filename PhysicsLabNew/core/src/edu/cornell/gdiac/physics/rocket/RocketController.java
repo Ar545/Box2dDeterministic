@@ -85,7 +85,7 @@ public class RocketController extends WorldController implements ContactListener
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
-		world.setContactListener(this);
+		real.world.setContactListener(this);
 	}
 
 	/**
@@ -120,26 +120,18 @@ public class RocketController extends WorldController implements ContactListener
 	 * This method disposes of the world and creates a new one.
 	 */
 	public void reset() {
-		Vector2 gravity = new Vector2(world.getGravity() );
-		
-		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
-		}
-		objects.clear();
-		addQueue.clear();
-		world.dispose();
-		
-		world = new World(gravity,false);
-		world.setContactListener(this);
+		super.reset();
+		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
-		populateLevel();
+		populateLevel(real);
+		populateLevel(compare);
 	}
 
 	/**
 	 * Lays out the game geography.
 	 */
-	private void populateLevel() {
+	private void populateLevel(WorldBenchmark wb) {
 		// Add level goal
 		float dwidth  = goalTile.getRegionWidth()/scale.x;
 		float dheight = goalTile.getRegionHeight()/scale.y;
@@ -155,7 +147,7 @@ public class RocketController extends WorldController implements ContactListener
 		goalDoor.setDrawScale(scale);
 		goalDoor.setTexture(goalTile);
 		goalDoor.setName("goal");
-		addObject(goalDoor);
+		addObject(wb, goalDoor);
 
 		// Create ground pieces
 		PolygonObstacle obj;
@@ -169,7 +161,7 @@ public class RocketController extends WorldController implements ContactListener
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall1");
-		addObject(obj);
+		addObject(wb, obj);
 
 		obj = new PolygonObstacle(walljv.get(1).asFloatArray(), 0, 0);
 		obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -179,7 +171,7 @@ public class RocketController extends WorldController implements ContactListener
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall2");
-		addObject(obj);
+		addObject(wb, obj);
 
 		obj = new PolygonObstacle(walljv.get(2).asFloatArray(), 0, 0);
 		obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -189,7 +181,7 @@ public class RocketController extends WorldController implements ContactListener
 		obj.setDrawScale(scale);
 		obj.setTexture(earthTile);
 		obj.setName("wall3");
-		addObject(obj);
+		addObject(wb, obj);
 
 		// Create the pile of boxes
 		JsonValue boxjv = constants.get("boxes");
@@ -206,7 +198,7 @@ public class RocketController extends WorldController implements ContactListener
 			box.setName("crate"+id);
 			box.setDrawScale(scale);
 			box.setTexture(texture);
-			addObject(box);
+			addObject(wb, box);
 		}
 
 		// Create the rocket avatar
@@ -224,7 +216,7 @@ public class RocketController extends WorldController implements ContactListener
 	    rocket.setBurnerSound(RocketModel.Burner.MAIN,  burnSound);
 	    rocket.setBurnerSound(RocketModel.Burner.LEFT,  leftSound);
 	    rocket.setBurnerSound(RocketModel.Burner.RIGHT, rghtSound);
-		addObject(rocket);
+		addObject(wb, rocket);
 
 		burnVol = defaults.getFloat("volume", 1);
 		bumpVol = constants.get("collisions").getFloat( "volume", 1 );;
@@ -270,52 +262,22 @@ public class RocketController extends WorldController implements ContactListener
 	 */
 	@Override
 	public void postUpdate(float dt) {
+		indetPostUpdate(real, dt);
+		indetPostUpdate(compare, dt);
+	}
+
+	public void indetPostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
-		while (!addQueue.isEmpty()) {
-			addObject(addQueue.poll());
+		while (!wb.addQueue.isEmpty()) {
+			addObject(wb.addQueue.poll());
 		}
 
 		// Turn the physics engine crank.
-		world.step(dt, WORLD_VELOC, WORLD_POSIT);
+		wb.world.step(dt, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
 //		ProcessPhysics(dt);
 
-		// Garbage collect the deleted objects.
-		// Note how we use the linked list nodes to delete O(1) in place.
-		// This is O(n) without copying.
-		Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
-		while (iterator.hasNext()) {
-			PooledList<Obstacle>.Entry entry = iterator.next();
-			Obstacle obj = entry.getValue();
-			if (obj.isRemoved()) {
-				obj.deactivatePhysics(world);
-				entry.remove();
-			} else {
-				// Note that update is called last!
-				obj.update(dt);
-			}
-		}
+		wb.garbageCollect(dt);
 	}
-
-//	float remainingTime = 0f;
-//	float miniStep = 0.003f;
-//
-//	/** Turn the physics engine crank. */
-//	private void ProcessPhysics(float dt) {
-//		// The total time needed to simulate
-//		float totalTime = remainingTime + dt;
-//		// The total sim time (needed for obj->update)
-//		while (totalTime > miniStep) {
-//			// apply all forces
-//			applyForceToRocket();
-//			// release all forces through step
-//			world.step(miniStep, WORLD_VELOC, WORLD_POSIT);
-//			totalTime -= miniStep;
-//		}
-//		// update the graphics for the total sim time
-//		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
-//		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
-//		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
-//	}
 	
 	/**
 	 * Updates that animation for a single burner
