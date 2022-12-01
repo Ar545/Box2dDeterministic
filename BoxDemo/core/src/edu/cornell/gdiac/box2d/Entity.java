@@ -21,8 +21,12 @@ package edu.cornell.gdiac.box2d;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+//import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
+import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.BodyType;
+
 
 /**
  * Instances represents a single physics object with no Joints.
@@ -49,7 +53,7 @@ public abstract class Entity {
 	/** The physics geometry (collisions) */
 	protected Fixture fixture;
 	/** The size (width and height) of the bounding box */
-	protected Vector2 size;
+	protected Vec2 size;
 	/** Whether this is a static object */
 	protected boolean isStatic;
 
@@ -61,7 +65,7 @@ public abstract class Entity {
 
 	// Buffers for physical values
 	/** The initial position of the physics object */
-	protected Vector2 position;
+	protected Vec2 position;
 	/** The initial density of the physics object */
 	protected float density;
 	/** The initial friction of the physics object */
@@ -71,14 +75,14 @@ public abstract class Entity {
 
 	/**
 	 * Returns the position of this physics object
-	 * 
-	 * If the physics object has been initialized (e.g. it has an allocated body), 
+	 *
+	 * If the physics object has been initialized (e.g. it has an allocated body),
 	 * then it will return the current position.  It is unsafe to change the returned
 	 * object.  Modifications to this object result in undefined behavior.
 	 *
 	 * @return the position of this physics object
 	 */
-	public Vector2 getPosition() {
+	public Vec2 getPosition() {
 		if (body == null) {
 			return position;
 		}
@@ -97,7 +101,7 @@ public abstract class Entity {
 	 *
 	 * @param value  the positition of the physics object
 	 */
-	public void setPosition(Vector2 value) {
+	public void setPosition(Vec2 value) {
 		position.set(value);
 		if (body != null) {
 			body.setTransform(value,body.getAngle());
@@ -151,7 +155,7 @@ public abstract class Entity {
 	 *
 	 * @return the bounding box size of this object.
 	 */
-	public Vector2 getSize() {
+	public Vec2 getSize() {
 		return size;
 	}
 
@@ -278,14 +282,14 @@ public abstract class Entity {
 	public void setStatic(boolean value) {
 		isStatic = value;
 		if (body != null) {
-			body.setType(isStatic ? BodyType.StaticBody : BodyType.DynamicBody);
+			body.setType(isStatic ? BodyType.STATIC : BodyType.DYNAMIC);
 		}
 	}
 
 	/** Sets the body type to kinetic. */
 	public void setKinetic() {
 		if (body != null) {
-			body.setType(BodyType.KinematicBody);
+			body.setType(BodyType.KINEMATIC);
 		}
 	}
 	
@@ -305,7 +309,7 @@ public abstract class Entity {
 		friction = 0.1f;
 		restitution = 0.0f;
 		color = new Color(Color.WHITE);
-		position = new Vector2();
+		position = new Vec2();
 	}
 			
 	/**
@@ -316,10 +320,10 @@ public abstract class Entity {
  	 * @param world The physics world
  	 * @param size  The size of the bounding box
  	 */
-	public void initialize(World world, World drawWorld, Vector2 size) {
+	public void initialize(World world, World drawWorld, Vec2 size) {
 		// Make a body, if possible
 		BodyDef def = new BodyDef();
-		def.type = (isStatic ? BodyType.StaticBody : BodyType.DynamicBody);
+		def.type = (isStatic ? BodyType.STATIC : BodyType.DYNAMIC);
 		def.position.set(position);
 
 		body = world.createBody(def);
@@ -357,22 +361,59 @@ public abstract class Entity {
      *
      * @param size The object bounding box
      */
-	protected abstract void makeFixture(Vector2 size);
+	protected abstract void makeFixture(Vec2 size);
 
 	/**
      * Create the drawing shape information
      *
      * @param size The object bounding box
      */
-	protected abstract void makeGraphics(Vector2 size);
+	protected abstract void makeGraphics(Vec2 size);
 
 	/** Gravity is proportional to one over radius squared */
 	public void updateAttractionForce(Entity barrier) {
-		Vector2 directedForce = barrier.getPosition().cpy().sub(this.getPosition());
-		float radius = directedForce.len();
-		directedForce.nor().scl(1/(radius * radius));
-		this.body.applyForceToCenter(directedForce, true);
+		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(1/(radius * radius)).add(new Vec2(0, -0.00033333f));
+		this.body.applyForceToCenter(directedForce);
 //		restitution
+	}
+
+	/** Gravity is proportional to one over radius squared */
+	public void updateDrawBodyAttractionForce(Entity barrier) {
+		Vec2 directedForce = barrier.getPosition().clone().sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(1/(radius * radius)).add(new Vec2(0, -0.00044444f));
+		this.draw_body.applyForceToCenter(directedForce);
+//		restitution
+	}
+
+	public void updateAttractionForce(Vec2 pos){
+		Vec2 directedForce = pos.sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(0.000111f/(radius * radius)).add(new Vec2(0, 0.00033333f));
+		this.body.applyForceToCenter(directedForce);
+//		this.body.applyLinearImpulse(directedForce, this.body.getWorldCenter(), true);
+	}
+
+	public void updateDrawBodyAttractionForce(Vec2 pos){
+		Vec2 directedForce = pos.sub(this.getPosition());
+		float radius = directedForce.length();
+		directedForce.normalize();
+		directedForce.mul(0.000111f/(radius * radius)).add(new Vec2(0, 0.00033333f));
+		this.draw_body.applyForceToCenter(directedForce);
+//		this.draw_body.applyLinearImpulse(directedForce, this.draw_body.getWorldCenter(), true);
+	}
+
+	public void applyForceReal(boolean left){
+		this.body.applyForceToCenter(new Vec2(left ? -1.1111111f : 1.11111111f, left ? -0.1111112f : -0.1111108f));
+	}
+
+	public void applyForceDraw(boolean left){
+		this.draw_body.applyForceToCenter(new Vec2(left ? -1.1111111f : 1.11111111f, left ? -0.1111112f : -0.1111108f));
 	}
 
 //	protected abstract void updatePhysics();

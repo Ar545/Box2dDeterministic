@@ -12,9 +12,12 @@ package edu.cornell.gdiac.box2d.shape;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.box2d.*;  // For GameCanvas and Entity
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.dynamics.FixtureDef;
+import org.jbox2d.common.Vec2;
 
 /**
  * A triangular physics object.
@@ -36,7 +39,7 @@ public class Triangle extends Entity {
 	 *
 	 * @return an array of vertices representing an equilateral triangle
 	 */
-	private float[] makeTriangle(Vector2 size) {
+	private float[] makeTriangle(Vec2 size) {
 		float[] vertices = new float[6];
 		float altitude  = (float)Math.sqrt(3) * size.y / 2.0f;
 		float halfWidth = size.x / 2.0f;
@@ -50,15 +53,40 @@ public class Triangle extends Entity {
 		
 		return vertices;
 	}
+
+	/**
+	 * Returns an array of vertices representing an equilateral triangle
+	 *
+	 * This array is used for both physics AND drawing.
+	 *
+	 * @return an array of vertices representing an equilateral triangle
+	 */
+	private Vec2[] makeTriangleVec2(Vec2 size) {
+		Vec2[] vertices = new Vec2[3];
+		float altitude  = (float)Math.sqrt(3) * size.y / 2.0f;
+		float halfWidth = size.x / 2.0f;
+
+//		vertices[0] = -halfWidth;
+//		vertices[1] = altitude / 3.0f;
+		vertices[0] = new Vec2(-halfWidth, altitude / 3.0f);
+//		vertices[2] = 0.0f;
+//		vertices[3] = -2.0f * altitude / 3.0f;
+		vertices[1] = new Vec2(0.0f, -2.0f * altitude / 3.0f);
+//		vertices[4] = halfWidth;
+//		vertices[5] = altitude / 3.0f;
+		vertices[2] = new Vec2(halfWidth, altitude / 3.0f);
+
+		return vertices;
+	}
 	
 	/**
      * Create the collision shape information
      *
      * @param size The object bounding box
      */
-	protected void makeFixture(Vector2 size) {
+	protected void makeFixture(Vec2 size) {
 		shape = new PolygonShape();
-		shape.set(makeTriangle(size));
+		shape.set(makeTriangleVec2(size), 3);
 
 		// Create the fixture
 		FixtureDef def = new FixtureDef();
@@ -68,7 +96,7 @@ public class Triangle extends Entity {
 		def.shape = shape;
 
 		fixture = body.createFixture(def);
-		shape.dispose(); // Do not need it anymore
+//		shape.dispose(); // Do not need it anymore
 	}
 
 	/**
@@ -76,7 +104,7 @@ public class Triangle extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeGraphics(Vector2 size) {
+	protected void makeGraphics(Vec2 size) {
 		float[] vertices = makeTriangle(size);
 
 		// Indices are trivial

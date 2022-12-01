@@ -14,9 +14,12 @@ package edu.cornell.gdiac.box2d.shape;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.box2d.*;  // For GameCanvas and Entity
+import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.dynamics.FixtureDef;
+import org.jbox2d.common.Vec2;
 
 /**
  * A rectangular physics object.
@@ -35,7 +38,7 @@ public class Box extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeFixture(Vector2 size) {
+	protected void makeFixture(Vec2 size) {
 		shape = new PolygonShape();
 		// The polygon tool uses half-height
 		shape.setAsBox(size.x / 2, size.y / 2);
@@ -48,7 +51,7 @@ public class Box extends Entity {
 		def.shape = shape;
 
 		fixture = body.createFixture(def);
-		shape.dispose(); // Do not need it anymore
+//		shape.dispose(); // Do not need it anymore
 	}
 
 	/**
@@ -56,7 +59,7 @@ public class Box extends Entity {
      *
      * @param size The object bounding box
      */
-	protected void makeGraphics(Vector2 size) {
+	protected void makeGraphics(Vec2 size) {
 		// Make the polygon centered at origin
 		float[] vertices = new float[8];
 		vertices[0] = -size.x/2.0f;

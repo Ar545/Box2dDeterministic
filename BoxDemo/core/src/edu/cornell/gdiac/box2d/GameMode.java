@@ -13,7 +13,11 @@ package edu.cornell.gdiac.box2d;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
+import org.jbox2d.callbacks.*;
+import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.*;
+import org.jbox2d.collision.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
@@ -26,6 +30,10 @@ import edu.cornell.gdiac.util.*;
  * basic game loop (update-draw).
  */
 public class GameMode implements Screen, ContactListener {
+
+	public static int[][] debugArray = new int[3][40];
+
+
 
 	/** The font for giving messages to the player */
 	private static BitmapFont theFont;
@@ -62,8 +70,8 @@ public class GameMode implements Screen, ContactListener {
 
 		// Create the controllers.
 		inputController = new InputController();
-		leftController = new GameplayController();
-		rightController = new GameplayController();
+		leftController = new GameplayController(true);
+		rightController = new GameplayController(false);
 
 		// Create the entities
 		reset();
@@ -93,6 +101,7 @@ public class GameMode implements Screen, ContactListener {
 		rightController.reset(size);
 		leftController.setContactListener(this);
 		rightController.setContactListener(this);
+		print = false;
 	}
 
 
@@ -114,8 +123,8 @@ public class GameMode implements Screen, ContactListener {
 
 		// Process all the settings (density, friction, etc.) changes
 		changeSettings();
-		leftController.update(delta, inputController);
-		rightController.update(delta_cache, inputController);
+		leftController.update(delta, inputController, debugArray);
+		rightController.update(delta_cache, inputController, debugArray);
 		delta_cache = delta;
 	}
 
@@ -181,10 +190,34 @@ public class GameMode implements Screen, ContactListener {
 	public void render(float delta) {
 		if (active) {
 			update(delta);
+			print(delta);
 			draw(delta);
 			if (inputController.didExit() && listener != null) {
 				listener.exitScreen(this, 0);
 			}
+		}
+	}
+
+	boolean print = false;
+	public void print(float delta){
+//		if()
+//		System.out.print("delta:" + delta + ",left-time:");
+//		System.out.print(leftController.car.getPosition().x + ",right-time:");
+//		System.out.print(rightController.car.getPosition().x + ",left-pos:");
+//		System.out.print(Float.floatToRawIntBits(leftController.avatar.getPosition().y) + ",right-pos:");
+//		System.out.print(Float.floatToRawIntBits(rightController.avatar.getPosition().y) + ",diff-pos:");
+//		System.out.print(Float.floatToRawIntBits(leftController.avatar.getPosition().y) - Float.floatToRawIntBits(rightController.avatar.getPosition().y));
+//		System.out.println(".");
+
+		int leftTime = Math.round(leftController.car.getPosition().x * 1000 / 3) - 1;
+		int rightTime = Math.round(rightController.car.getPosition().x * 1000 / 3) - 1;
+		if(leftTime > debugArray[0].length && rightTime > debugArray[0] .length && !print){
+			for(int i = 0; i < debugArray[0].length; i ++){
+				System.out.print("time:" + i);
+				System.out.print(",left-pos:" + debugArray[0][i] + ",right-pos:");
+				System.out.println(debugArray[1][i] + ",diff-pos:" + (debugArray[0][i] - debugArray[1][i]));
+			}
+			print = true;
 		}
 	}
 

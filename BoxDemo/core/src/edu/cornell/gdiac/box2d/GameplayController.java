@@ -3,7 +3,10 @@ package edu.cornell.gdiac.box2d;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+//import com.badlogic.gdx.physics.box2d.*;
+import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.*;
+import org.jbox2d.dynamics.contacts.*;
 import edu.cornell.gdiac.box2d.shape.Box;
 import edu.cornell.gdiac.box2d.shape.Circle;
 import edu.cornell.gdiac.box2d.shape.Ellipse;
@@ -38,8 +41,8 @@ public class GameplayController {
     // Default sizes for the model objects
     public static final int AVATAR_WIDTH   = 1;
     public static final int AVATAR_HEIGHT  = 1;
-    public static final int BARRIER_WIDTH  = 3;
-    public static final int BARRIER_HEIGHT = 1;
+    public static final float BARRIER_WIDTH  = 5.655555f;
+    public static final float BARRIER_HEIGHT = 0.1333333f;
 
     // For translating the controls
     public static final float MAX_DENSITY = 1000.0f;
@@ -70,10 +73,12 @@ public class GameplayController {
     public Entity avatar;
     /** Static (unmovable) barrier */
     private Entity barrier;
+    /** Static (unmovable) barrier */
+    private Entity secondBarrier;
     /** Kinetic (fixed movement) reference object */
     public Entity car;
     /** Cache object for moving the player */
-    private Vector2 translate = new Vector2();
+    private Vec2 translate = new Vec2();
 
     // Reference states for game HUD
     /** The current active control screen */
@@ -96,16 +101,19 @@ public class GameplayController {
 
     Vector2 size;
 
-    public GameplayController(){
+    boolean isLeft;
+
+    public GameplayController(boolean isLeft){
         // Create the list of objects
         objects = new LinkedList<>();
+        this.isLeft = isLeft;
     }
 
     /** Dispose of all (non-static) resources allocated to this mode. */
     public void dispose() {
-        world.dispose();
+//        world.dispose();
         world  = null;
-        draw_world.dispose();
+//        draw_world.dispose();
         draw_world = null;
         objects.clear();
         objects = null;
@@ -121,31 +129,33 @@ public class GameplayController {
     protected void reset() {
 
         if (world != null) {
-            world.dispose();
+//            world.dispose();
         }
         if(draw_world != null){
-            draw_world.dispose();
+//            draw_world.dispose();
         }
         if(objects != null){
             objects.clear();
         }
 
-        world = new World(Vector2.Zero, false);
-        draw_world = new World(Vector2.Zero, false);
+        world = new World(new Vec2());
+        draw_world = new World(new Vec2());
 
         // Create the player
-        Vector2 position = new Vector2(size.x / 2,  size.y / 4.0f);
-        avatar = makeEntity(shape);
+        Vec2 position = new Vec2(size.x / 2,  size.y / 4.0f);
+        avatar = makeEntity(2);
         avatar.getColor().set(Color.RED);
         avatar.setDensity(density[0]);
         avatar.setFriction(friction[0]);
         avatar.setRestitution(restitution[0]);
         avatar.setPosition(position);
-        avatar.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+        avatar.initialize(world, draw_world, new Vec2(AVATAR_WIDTH, AVATAR_HEIGHT));
         objects.add(avatar);
 
+        System.out.println("initial-y-pos:" + Float.floatToRawIntBits(position.y));
+
         // Create the barrier
-        position = new Vector2 (size.x / 2, 3 * size.y/4.0f);
+        position = new Vec2 (5 * size.x / 7, 3 * size.y/4.0f);
         barrier = makeEntity(shape);
         barrier.setStatic(true);
         barrier.getColor().set(Color.YELLOW);
@@ -153,11 +163,23 @@ public class GameplayController {
         barrier.setFriction(friction[0]);
         barrier.setRestitution(restitution[0]);
         barrier.setPosition(position);
-        barrier.initialize(world, draw_world, new Vector2(BARRIER_WIDTH, BARRIER_HEIGHT));
+        barrier.initialize(world, draw_world, new Vec2(BARRIER_WIDTH, BARRIER_HEIGHT));
         objects.add(barrier);
 
+        // Create the second barrier
+        position = new Vec2 (1.982478f * size.x / 7, 3 * size.y/4.0f);
+        secondBarrier = makeEntity(shape);
+        secondBarrier.setStatic(true);
+        secondBarrier.getColor().set(Color.SALMON);
+        secondBarrier.setDensity(density[0]);
+        secondBarrier.setFriction(friction[0]);
+        secondBarrier.setRestitution(restitution[0]);
+        secondBarrier.setPosition(position);
+        secondBarrier.initialize(world, draw_world, new Vec2(BARRIER_WIDTH, BARRIER_HEIGHT));
+        objects.add(secondBarrier);
+
         // Create the reference object
-        position = new Vector2 (0, 0);
+        position = new Vec2 (0, 0);
         car = makeEntity(shape);
         car.setKinetic();
         car.getColor().set(Color.GREEN);
@@ -165,9 +187,9 @@ public class GameplayController {
         car.setFriction(friction[0]);
         car.setRestitution(restitution[0]);
         car.setPosition(position);
-        car.initialize(world, draw_world, new Vector2(AVATAR_WIDTH, AVATAR_HEIGHT));
+        car.initialize(world, draw_world, new Vec2(AVATAR_WIDTH, AVATAR_HEIGHT));
         objects.add(car);
-        car.body.setLinearVelocity(0.1f, 0);
+        car.body.setLinearVelocity(new Vec2(0.1f, 0));
     }
 
     public void setContactListener(GameMode gm){
@@ -199,18 +221,18 @@ public class GameplayController {
      *
      * @param delta Number of seconds since last animation frame
      */
-    public void update(float delta, InputController inputController) {
+    public void update(float delta, InputController inputController, int[][] debugArray) {
 
 
         // Process avatar movement.
         switch (controls) {
             case CONTROL_FORCE:
-                avatar.getBody().applyForce (inputController.getLinearForce(), avatar.getBody().getPosition(), true);
-                avatar.getBody().applyTorque(inputController.getAngularForce(), true);
+                avatar.getBody().applyForce (inputController.getLinearForce(), avatar.getBody().getPosition());
+                avatar.getBody().applyTorque(inputController.getAngularForce());
                 break;
             case CONTROL_IMPULSE:
                 avatar.getBody().applyLinearImpulse(inputController.getLinearForce(), avatar.getBody().getPosition(), true);
-                avatar.getBody().applyAngularImpulse(inputController.getAngularForce(), true);
+                avatar.getBody().applyAngularImpulse(inputController.getAngularForce());
                 break;
             case CONTROL_VELOCITY:
                 avatar.getBody().setLinearVelocity(inputController.getLinearForce());
@@ -218,7 +240,7 @@ public class GameplayController {
                 break;
             case CONTROL_TRANSLATE:
                 // We have to adjust this a lot to keep it from zipping about
-                translate.set(inputController.getLinearForce()).scl(1/50.0f);
+                translate.set(inputController.getLinearForce()).mul(1/50.0f);
                 translate.add(avatar.getBody().getPosition());
 
                 float ang = avatar.getBody().getAngle() + inputController.getAngularForce();
@@ -231,7 +253,7 @@ public class GameplayController {
 
         // Process physicsSize
 //		world.step(delta, WORLD_VELOCITY, WORLD_POSIT);
-        ProcessPhysics(delta);
+        ProcessPhysics(delta, debugArray);
     }
 
     /** The mini step size. This is the "mini" steps we will use to get "close enough" to the amount of time that has actually passed. */
@@ -244,7 +266,7 @@ public class GameplayController {
     int obstacle_position = WORLD_POSIT;
 
     /** Turn the physics engine crank. */
-    private void ProcessPhysics(float dt) {
+    private void ProcessPhysics(float dt, int[][] debugArray) {
 //		System.out.println("dt is "+ dt);
 
         // The total time needed to simulate
@@ -255,8 +277,20 @@ public class GameplayController {
 			for (Entity e : objects) {
 //				e.updatePhysics();
 			}
+//            world.clearForces();
             avatar.updateAttractionForce(barrier);
-            world.step(miniStep, obstacle_velocity, obstacle_position);
+            avatar.updateAttractionForce(secondBarrier);
+//            avatar.updateAttractionForce(new Vec2(size.x / 2,3 * size.y/4.0f));
+            world.step(miniStep, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
+//            world.clearForces();
+//            System.out.println(Float.floatToRawIntBits(miniStep));
+
+            // TODO: fill in the array
+            int time = Math.round(car.getPosition().x * 1000 / 3) ;
+            if(time < debugArray[0].length){
+                debugArray[isLeft ? 0 : 1][time] = Float.floatToRawIntBits(avatar.getPosition().y);
+            }
+
             totalTime -= miniStep;
         }
 
@@ -267,9 +301,13 @@ public class GameplayController {
             e.syncBodies();
 //			e.updatePhysics();
         }
-        avatar.updateAttractionForce(barrier);
+        draw_world.clearForces();
+        avatar.updateDrawBodyAttractionForce(barrier);
+        avatar.updateDrawBodyAttractionForce(secondBarrier);
+//        avatar.updateDrawBodyAttractionForce(new Vec2(size.x / 2,3 * size.y/4.0f));
         // Step the draw world by the remaining time
-        draw_world.step(remainingTime, obstacle_velocity, obstacle_position);
+        draw_world.step(remainingTime, obstacle_velocity, obstacle_position, isLeft ? 0 : 1);
+//        draw_world.clearForces();
 
         // Post process all objects after physics (this updates graphics)
 //		for(Entity it : objects) {
@@ -292,26 +330,29 @@ public class GameplayController {
         if (changeValue(density, inputController.getDensity(), MIN_DENSITY, MAX_DENSITY)) {
             avatar.setDensity(density[0]);
             barrier.setDensity(density[0]);
+            secondBarrier.setDensity(density[0]);
         }
         if (changeValue(friction, inputController.getFriction(), MIN_STICKY, MAX_STICKY)) {
             avatar.setFriction(friction[0]);
             barrier.setFriction(friction[0]);
+            secondBarrier.setFriction(friction[0]);
         }
         if (changeValue (restitution, inputController.getRestitution(), MIN_BOUNCY, MAX_BOUNCY)) {
             avatar.setRestitution(restitution[0]);
             barrier.setRestitution(restitution[0]);
+            secondBarrier.setRestitution(restitution[0]);
         }
 
         // Change the input controls
         if (inputController.getControls() > 0) {
             controls = (controls + inputController.getControls()) % NUM_CONTROLS;
             // Stop the body.
-            avatar.getBody().setLinearVelocity(Vector2.Zero);
+            avatar.getBody().setLinearVelocity(new Vec2());
             avatar.getBody().setAngularVelocity(0f);
         } else if (inputController.getControls() < 0) {
             controls = (controls + (NUM_CONTROLS+inputController.getControls())) % NUM_CONTROLS;
             // Stop the body.
-            avatar.getBody().setLinearVelocity(Vector2.Zero);
+            avatar.getBody().setLinearVelocity(new Vec2());
             avatar.getBody().setAngularVelocity(0f);
         }
         if(reset){
@@ -385,6 +426,7 @@ public class GameplayController {
         // Draw the shapes.
         avatar.draw(canvas);
         barrier.draw(canvas);
+        secondBarrier.draw(canvas);
         car.draw(canvas);
 
         // Draw the HUD.
@@ -411,6 +453,7 @@ public class GameplayController {
         // Draw the shapes.
         avatar.draw(canvas, offset);
         barrier.draw(canvas, offset);
+        secondBarrier.draw(canvas, offset);
         car.draw(canvas, offset);
 
         // Draw the HUD.
@@ -445,10 +488,38 @@ public class GameplayController {
         Body body2 = contact.getFixtureB().getBody();
         Entity obj1 = (Entity)body1.getUserData();
         Entity obj2 = (Entity)body2.getUserData();
+        boolean real = body1.getWorld().equals(world) && body2.getWorld().equals(world);
+//        if(body1.getWorld().equals(world) && body2.getWorld().equals(world)){
+//            real = true;
+//        }else if(body1.getWorld().equals(draw_world) && body2.getWorld().equals(draw_world)){
+//            real = false;
+//        }else {
+//            System.out.println("collision across world detected!");
+//        }
 
         // If either object is the avatar, change color
         if (obj1 == avatar || obj2 == avatar) {
             avatar.getColor().set(Color.PURPLE);
+        }
+
+        if((obj1 == avatar && obj2 == barrier)||(obj1 == barrier && obj2 == avatar)){
+            if(real){
+                avatar.applyForceReal(true);
+                System.out.println("collision with right, real left force applied");
+            }else {
+                avatar.applyForceDraw(true);
+            }
+//            System.out.println("applied left");
+        }
+
+        if((obj1 == avatar && obj2 == secondBarrier)||(obj1 == secondBarrier && obj2 == avatar)){
+            if (real) {
+                avatar.applyForceReal(false);
+                System.out.println("collision with left, real right force applied!");
+            }else{
+                avatar.applyForceDraw(false);
+            }
+//            System.out.println("applied right");
         }
     }
 
