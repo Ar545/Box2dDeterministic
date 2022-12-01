@@ -62,6 +62,10 @@ public class PlatformController extends WorldController implements ContactListen
 	private DudeModel avatar;
 	/** Reference to the goalDoor (for collision detection) */
 	private BoxObstacle goalDoor;
+	/** Reference to the character avatar */ // TODO: avatar-bullet physics is not yet implemented for benchmark world
+	private DudeModel benchmark_avatar;
+	/** Reference to the goalDoor (for collision detection) */
+	private BoxObstacle benchmark_goalDoor;
 
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
@@ -126,7 +130,7 @@ public class PlatformController extends WorldController implements ContactListen
 
 		JsonValue goal = constants.get("goal");
 		JsonValue goalpos = goal.get("pos");
-		goalDoor = new BoxObstacle(goalpos.getFloat(0),goalpos.getFloat(1),dwidth,dheight);
+		BoxObstacle goalDoor = new BoxObstacle(goalpos.getFloat(0),goalpos.getFloat(1),dwidth,dheight);
 		goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
 		goalDoor.setDensity(goal.getFloat("density", 0));
 		goalDoor.setFriction(goal.getFloat("friction", 0));
@@ -136,6 +140,11 @@ public class PlatformController extends WorldController implements ContactListen
 		goalDoor.setTexture(goalTile);
 		goalDoor.setName("goal");
 		addObject(wb, goalDoor);
+		if(wb == real){
+			this.goalDoor = goalDoor;
+		}else{
+			this.benchmark_goalDoor = goalDoor;
+		}
 
 	    String wname = "wall";
 	    JsonValue walljv = constants.get("walls");
@@ -175,10 +184,16 @@ public class PlatformController extends WorldController implements ContactListen
 		// Create dude
 		dwidth  = avatarTexture.getRegionWidth()/scale.x;
 		dheight = avatarTexture.getRegionHeight()/scale.y;
-		avatar = new DudeModel(constants.get("dude"), dwidth, dheight);
+		DudeModel avatar = new DudeModel(constants.get("dude"), dwidth, dheight);
 		avatar.setDrawScale(scale);
 		avatar.setTexture(avatarTexture);
 		addObject(wb, avatar);
+
+		if(wb == real){
+			this.avatar = avatar;
+		}else{
+			this.benchmark_avatar = avatar;
+		}
 
 		// Create rope bridge
 		dwidth  = bridgeTexture.getRegionWidth()/scale.x;
@@ -234,26 +249,31 @@ public class PlatformController extends WorldController implements ContactListen
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public void update(float dt) {
+		updateAvatar(avatar);
+		updateAvatar(benchmark_avatar);
+	}
+
+	private void updateAvatar(DudeModel avatar) {
 		// Process actions in object model
 		avatar.setMovement(InputController.getInstance().getHorizontal() *avatar.getForce());
 		avatar.setJumping(InputController.getInstance().didPrimary());
 		avatar.setShooting(InputController.getInstance().didSecondary());
-		
+
 		// Add a bullet if we fire
 		if (avatar.isShooting()) {
-			createBullet();
+			createBullet(avatar);
 		}
-		
+
 		avatar.applyForce();
-	    if (avatar.isJumping()) {
-	    	jumpId = playSound( jumpSound, jumpId, volume );
-	    }
+		if (avatar.isJumping()) {
+			jumpId = playSound( jumpSound, jumpId, volume );
+		}
 	}
 
 	/**
 	 * Add a new bullet to the world and send it in the right direction.
 	 */
-	private void createBullet() {
+	private void createBullet(DudeModel avatar) {
 		JsonValue bulletjv = constants.get("bullet");
 		float offset = bulletjv.getFloat("offset",0);
 		offset *= (avatar.isFacingRight() ? 1 : -1);
@@ -325,6 +345,13 @@ public class PlatformController extends WorldController implements ContactListen
 				avatar.setGrounded(true);
 				sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
 			}
+
+			// See if we have landed on the ground.
+			if ((benchmark_avatar.getSensorName().equals(fd2) && benchmark_avatar != bd1) ||
+					(benchmark_avatar.getSensorName().equals(fd1) && benchmark_avatar != bd2)) {
+				benchmark_avatar.setGrounded(true);
+				sensorFixtures.add(benchmark_avatar == bd1 ? fix2 : fix1); // Could have more than one ground
+			}
 			
 			// Check for win condition
 			if ((bd1 == avatar   && bd2 == goalDoor) ||
@@ -362,6 +389,14 @@ public class PlatformController extends WorldController implements ContactListen
 			sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
 			if (sensorFixtures.size == 0) {
 				avatar.setGrounded(false);
+			}
+		}
+
+		if ((benchmark_avatar.getSensorName().equals(fd2) && benchmark_avatar != bd1) ||
+				(benchmark_avatar.getSensorName().equals(fd1) && benchmark_avatar != bd2)) {
+			sensorFixtures.remove(benchmark_avatar == bd1 ? fix2 : fix1);
+			if (sensorFixtures.size == 0) {
+				benchmark_avatar.setGrounded(false);
 			}
 		}
 	}

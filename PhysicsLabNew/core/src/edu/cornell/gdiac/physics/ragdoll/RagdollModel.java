@@ -291,9 +291,17 @@ public class RagdollModel extends ComplexObstacle {
 		assert bodies.size > 0;
 
 		//#region INSERT CODE HERE
-		// Implement all of the Ragdoll Joints here
+		// Implement all the Rag doll Joints here
 		// You may add additional methods if you find them useful
-
+		createJointsBetween(world, PART_BODY, PART_HEAD, 0f, 0.2f, 0f, -0.45f); // case 2
+		createJointsBetween(world, PART_BODY, PART_LEFT_ARM, -0.08f, 0.15f, 0.5f, 0f); // case 0
+		createJointsBetween(world, PART_BODY, PART_RIGHT_ARM, 0.08f, 0.15f, -0.5f, 0f);
+		createJointsBetween(world, PART_LEFT_FOREARM, PART_LEFT_ARM, 0.5f, 0f, -0.5f, 0f);
+		createJointsBetween(world, PART_RIGHT_FOREARM, PART_RIGHT_ARM, 0.5f, 0f, 0.5f, 0f); // case 1
+		createJointsBetween(world, PART_LEFT_THIGH, PART_BODY, 0f, 0.2f,-0.06f, -0.25f); // case 3
+		createJointsBetween(world, PART_RIGHT_THIGH, PART_BODY, 0f, 0.2f, 0.06f, -0.25f); // case 3
+		createJointsBetween(world, PART_LEFT_SHIN, PART_LEFT_THIGH, 0f, -0.5f, 0f, -0.5f); // case 1
+		createJointsBetween(world, PART_RIGHT_SHIN, PART_RIGHT_THIGH, 0f, -0.5f, 0f, -0.5f); // case 1
 		//#endregion
 		
 		
@@ -307,5 +315,40 @@ public class RagdollModel extends ComplexObstacle {
 		joints.add(wjoint);
 
 		return true;
+	}
+
+	/** create joint between part A and B according to the four scale provided */
+	protected void createJointsBetween(World world, int partA, int partB, float AXscale, float AYscale, float BXscale, float BYscale){
+		float xA = data.get( BODY_PARTS[partToAsset( partA )] ).getFloat( 0 ) * AXscale;
+		float yA = data.get( BODY_PARTS[partToAsset( partA )] ).getFloat( 1 ) * AYscale;
+		float xB = data.get( BODY_PARTS[partToAsset( partB )] ).getFloat( 0 ) * BXscale;
+		float yB = data.get( BODY_PARTS[partToAsset( partB )] ).getFloat( 1 ) * BYscale;
+
+		// Definition for a revolute joint
+		RevoluteJointDef loopJointDef = new RevoluteJointDef();
+
+		// Initial joint
+		loopJointDef.bodyA = bodies.get(partA).getBody();
+		loopJointDef.bodyB = bodies.get(partB).getBody();
+		loopJointDef.localAnchorA.set(new Vector2(xA, yA));
+		loopJointDef.localAnchorB.set(new Vector2(xB, yB));
+		loopJointDef.lowerAngle = -1.55f;
+		loopJointDef.upperAngle = 1.55f;
+		loopJointDef.collideConnected = false;
+		if(partA == PART_RIGHT_FOREARM || partA == PART_RIGHT_SHIN || partA == PART_LEFT_SHIN){
+			loopJointDef.referenceAngle = (float) Math.PI;
+		}
+		else if (partB == PART_HEAD || partA == PART_HEAD){
+			loopJointDef.lowerAngle = -0.8f;
+			loopJointDef.upperAngle = 0.8f;
+		}
+		else if (partA == PART_LEFT_THIGH || partA == PART_RIGHT_THIGH && partB == PART_BODY){
+			loopJointDef.referenceAngle = -3.1f ;
+			loopJointDef.lowerAngle = -0.8f;
+			loopJointDef.upperAngle = 0.8f;
+		}
+		loopJointDef.enableLimit = true;
+		Joint loopJoint = world.createJoint(loopJointDef);
+		joints.add(loopJoint);
 	}
 }

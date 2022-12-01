@@ -144,7 +144,17 @@ public class RopeBridge extends ComplexObstacle {
 		for (int ii = 0; ii < bodies.size-1; ii++) {
 			//#region INSERT CODE HERE
 			// Look at what we did above and join the planks
-						
+			// Definition for a revolute joint
+			RevoluteJointDef loopJointDef = new RevoluteJointDef();
+
+			// Initial joint
+			loopJointDef.bodyA = bodies.get(ii).getBody();
+			loopJointDef.bodyB = bodies.get(ii + 1).getBody();
+			loopJointDef.localAnchorA.set(anchor1);
+			loopJointDef.localAnchorB.set(anchor2);
+			loopJointDef.collideConnected = false;
+			Joint loopJoint = world.createJoint(loopJointDef);
+			joints.add(loopJoint);
 			//#endregion
 		}
 

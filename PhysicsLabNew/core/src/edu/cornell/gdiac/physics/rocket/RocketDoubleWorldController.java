@@ -523,6 +523,8 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("REAL-DRAW WORLD", displayFont, 230f);
+		displayFont.setColor(Color.RED);
+		canvas.drawTextCentered("NOT YET FINISHED", displayFont, 30f);
 		canvas.end();
 	}
 }
