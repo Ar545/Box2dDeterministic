@@ -370,6 +370,16 @@ public class PolygonObstacle extends SimpleObstacle {
 	}
 
 	/**
+	 * Draws the physics object. neglect the time offset because object is static
+	 * @param canvas Drawing context
+	 */
+	public void draw(GameCanvas canvas, float timeOffset) {
+		if (region != null) {
+			canvas.draw(region,Color.WHITE,0,0,getX()*drawScale.x,getY()*drawScale.y,getAngle(),1,1);
+		}
+	}
+
+	/**
 	 * Draws the outline of the physics body.
 	 *
 	 * This method can be helpful for understanding issues with collisions.

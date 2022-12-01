@@ -443,12 +443,7 @@ public abstract class WorldController implements Screen {
 		
 		canvas.begin();
 		for(Obstacle obj : real.objects) {
-			// TODO: override draw() in velocity world
-			if(VELOCITY_WORLD){
-				obj.draw(canvas, remainingTime);
-			}else{
-				obj.draw(canvas);
-			}
+			obj.draw(canvas);
 		}
 		canvas.end();
 		
