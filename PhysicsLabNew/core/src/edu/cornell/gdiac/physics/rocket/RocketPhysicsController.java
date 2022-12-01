@@ -11,6 +11,7 @@
 package edu.cornell.gdiac.physics.rocket;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -283,8 +284,28 @@ public class RocketPhysicsController extends WorldController implements ContactL
 	 */
 	@Override
 	public void postUpdate(float dt) {
+		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
 		physicsPostUpdate(real, dt);
-		physicsPostUpdate(compare, dt);
+		physicsPostUpdate(compare, skewedDt);
+	}
+
+	float difference = 0f;
+	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+		// find the new remaining time after the steps
+		float sum = dt + remainingTime;
+		while(sum > ministep){
+			sum -= ministep;
+		}
+		// generate another random remaining time as the intended remaining time
+		float skewedRemaining = ministep / 2;
+		// calculate the new intended difference
+		float new_intended_difference = skewedRemaining - sum;
+		// find the gap between the two difference
+		float gap_between_difference = new_intended_difference - difference;
+		// update the previous difference
+		difference = new_intended_difference;
+		// calculate the result
+		return dt + gap_between_difference;
 	}
 
 	private void physicsPostUpdate(WorldBenchmark wb, float dt) {
@@ -477,5 +498,20 @@ public class RocketPhysicsController extends WorldController implements ContactL
 		if (sid != -1) {
 			sound.stop(sid);
 		}
+	}
+
+	/**
+	 * Draw the physics objects to the canvas
+	 * For simple worlds, this method is enough by itself.  It will need
+	 * to be overridden if the world needs fancy backgrounds or the like
+	 * The method draws all objects in the order that they were added.
+	 * @param dt	Number of seconds since last animation frame
+	 */
+	public void draw(float dt){
+		super.draw(dt);
+		displayFont.setColor(Color.GREEN);
+		canvas.begin(); // DO NOT SCALE
+		canvas.drawTextCentered("PHYSICS WORLD", displayFont, 230f);
+		canvas.end();
 	}
 }

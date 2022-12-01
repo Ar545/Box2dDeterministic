@@ -449,7 +449,7 @@ public abstract class WorldController implements Screen {
 		
 		if (debug) {
 			canvas.beginDebug();
-			for(Obstacle obj : real.objects) {
+			for(Obstacle obj : compare.objects) {
 				obj.drawDebug(canvas);
 			}
 			canvas.endDebug();

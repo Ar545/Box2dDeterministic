@@ -11,6 +11,7 @@
 package edu.cornell.gdiac.physics.rocket;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -479,5 +480,49 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		if (sid != -1) {
 			sound.stop(sid);
 		}
+	}
+
+	/**
+	 * Draw the physics objects to the canvas
+	 * For simple worlds, this method is enough by itself.  It will need
+	 * to be overriden if the world needs fancy backgrounds or the like.
+	 * The method draws all objects in the order that they were added.
+	 *
+	 * @param dt	Number of seconds since last animation frame
+	 */
+	public void draw(float dt) {
+		canvas.clear();
+
+		canvas.begin();
+		for(Obstacle obj : real.objects) {
+			obj.draw(canvas);
+		}
+		canvas.end();
+
+		if (isDebug()) {
+			canvas.beginDebug();
+			for(Obstacle obj : compare.objects) {
+				obj.drawDebug(canvas);
+			}
+			canvas.endDebug();
+		}
+
+		// Final message
+		if (isComplete() && !isFailure()) {
+			displayFont.setColor(Color.YELLOW);
+			canvas.begin(); // DO NOT SCALE
+			canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+			canvas.end();
+		} else if (isFailure()) {
+			displayFont.setColor(Color.RED);
+			canvas.begin(); // DO NOT SCALE
+			canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+			canvas.end();
+		}
+
+		displayFont.setColor(Color.GREEN);
+		canvas.begin(); // DO NOT SCALE
+		canvas.drawTextCentered("REAL-DRAW WORLD", displayFont, 230f);
+		canvas.end();
 	}
 }

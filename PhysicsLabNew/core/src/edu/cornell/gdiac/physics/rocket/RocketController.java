@@ -278,8 +278,29 @@ public class RocketController extends WorldController implements ContactListener
 	 */
 	@Override
 	public void postUpdate(float dt) {
+		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
 		indetPostUpdate(real, dt);
-		indetPostUpdate(compare, dt);
+		indetPostUpdate(compare, skewedDt);
+//		System.out.println("skewed:" + skewedDt + "actual:" + dt);
+	}
+
+	float difference = 0f;
+	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+		// find the new remaining time after the steps
+		float sum = dt + remainingTime;
+		while(sum > ministep){
+			sum -= ministep;
+		}
+		// generate another random remaining time as the intended remaining time
+		float skewedRemaining = ministep / 2;
+		// calculate the new intended difference
+		float new_intended_difference = skewedRemaining - sum;
+		// find the gap between the two difference
+		float gap_between_difference = new_intended_difference - difference;
+		// update the previous difference
+		difference = new_intended_difference;
+		// calculate the result
+		return dt + gap_between_difference;
 	}
 
 	public void indetPostUpdate(WorldBenchmark wb, float dt) {
@@ -438,5 +459,20 @@ public class RocketController extends WorldController implements ContactListener
 		if (sid != -1) {
 			sound.stop(sid);
 		}
+	}
+
+	/**
+	 * Draw the physics objects to the canvas
+	 * For simple worlds, this method is enough by itself.  It will need
+	 * to be overridden if the world needs fancy backgrounds or the like
+	 * The method draws all objects in the order that they were added.
+	 * @param dt	Number of seconds since last animation frame
+	 */
+	public void draw(float dt){
+		super.draw(dt);
+		displayFont.setColor(Color.GREEN);
+		canvas.begin(); // DO NOT SCALE
+		canvas.drawTextCentered("ORIGINAL WORLD", displayFont, 230f);
+		canvas.end();
 	}
 }

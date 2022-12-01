@@ -285,8 +285,28 @@ public class RocketVelocityController extends WorldController implements Contact
 	 */
 	@Override
 	public void postUpdate(float dt) {
+		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
 		velocityPostUpdate(real, dt);
-		velocityPostUpdate(compare, dt);
+		velocityPostUpdate(compare, skewedDt);
+	}
+
+	double difference = 0f;
+	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+		// find the new remaining time after the steps
+		float sum = dt + remainingTime;
+		while(sum > ministep){
+			sum -= ministep;
+		}
+		// generate another random remaining time as the intended remaining time
+		double skewedRemaining = ministep / 2;
+		// calculate the new intended difference
+		double new_intended_difference = skewedRemaining - sum;
+		// find the gap between the two difference
+		double gap_between_difference = new_intended_difference - difference;
+		// update the previous difference
+		difference = new_intended_difference;
+		// calculate the result
+		return (float) (dt + gap_between_difference);
 	}
 
 	public void velocityPostUpdate(WorldBenchmark wb, float dt) {
@@ -469,12 +489,9 @@ public class RocketVelocityController extends WorldController implements Contact
 
 	/**
 	 * Draw the physics objects to the canvas
-	 *
 	 * For simple worlds, this method is enough by itself.  It will need
-	 * to be overriden if the world needs fancy backgrounds or the like.
-	 *
+	 * to be overridden if the world needs fancy backgrounds or the like
 	 * The method draws all objects in the order that they were added.
-	 *
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public void draw(float dt) {
@@ -488,7 +505,7 @@ public class RocketVelocityController extends WorldController implements Contact
 
 		if (isDebug()) {
 			canvas.beginDebug();
-			for(Obstacle obj : real.objects) {
+			for(Obstacle obj : compare.objects) {
 				obj.drawDebug(canvas);
 			}
 			canvas.endDebug();
@@ -506,5 +523,10 @@ public class RocketVelocityController extends WorldController implements Contact
 			canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
 			canvas.end();
 		}
+
+		displayFont.setColor(Color.GREEN);
+		canvas.begin(); // DO NOT SCALE
+		canvas.drawTextCentered("VELOCITY WORLD", displayFont, 230f);
+		canvas.end();
 	}
 }
