@@ -89,6 +89,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		setComplete(false);
 		setFailure(false);
 		world.setContactListener(this);
+		DOUBLE_WORLD = true;
 	}
 
 	/**

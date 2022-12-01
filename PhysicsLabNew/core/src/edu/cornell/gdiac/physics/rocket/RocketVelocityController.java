@@ -89,6 +89,7 @@ public class RocketVelocityController extends WorldController implements Contact
 		setComplete(false);
 		setFailure(false);
 		world.setContactListener(this);
+		VELOCITY_WORLD = true;
 	}
 
 	/**
