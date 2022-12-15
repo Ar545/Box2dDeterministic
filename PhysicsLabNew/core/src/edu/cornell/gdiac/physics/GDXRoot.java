@@ -60,17 +60,16 @@ public class GDXRoot extends Game implements ScreenListener {
 		loading = new LoadingMode("assets.json",canvas,1);
 
 		// Initialize the three game worlds
-		controllers = new WorldController[8];
+		controllers = new WorldController[7];
 		controllers[0] = new RocketController();
 		controllers[1] = new RocketPhysicsController();
 		controllers[2] = new RocketVelocityController();
 		controllers[3] = new RocketDoubleWorldController();
 
 		controllers[4] = new PlatformController();
-		controllers[5] = new PlatformFixedController();
-		controllers[6] = new PlatformPhysicsController();
+		controllers[5] = new PlatformPhysicsController();
 
-		controllers[7] = new RagdollController();
+		controllers[6] = new RagdollController();
 		current = 0;
 		loading.setScreenListener(this);
 		setScreen(loading);

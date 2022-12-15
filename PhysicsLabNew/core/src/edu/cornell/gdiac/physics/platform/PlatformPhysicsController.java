@@ -83,7 +83,6 @@ public class PlatformPhysicsController extends WorldController implements Contac
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
-		compare.world.setContactListener(this);
 		real.world.setContactListener(this);
 		sensorFixtures = new ObjectSet<Fixture>();
 	}
@@ -117,6 +116,7 @@ public class PlatformPhysicsController extends WorldController implements Contac
 	 */
 	public void reset() {
 		super.reset();
+		compare.world.setContactListener(this);
 		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
@@ -265,7 +265,7 @@ public class PlatformPhysicsController extends WorldController implements Contac
 
 		// Add a bullet if we fire
 		if (avatar.isShooting()) {
-			System.out.println("shooting is");
+			System.out.println("is shooting");
 			createBullet(avatar);
 		}
 
@@ -276,17 +276,34 @@ public class PlatformPhysicsController extends WorldController implements Contac
 	}
 
 	/**
-	 * Processes physics
-	 * Once the update phase is over, but before we draw, we are ready to handle
-	 * physics.  The primary method is the step() method in world.  This implementation
-	 * works for all applications and should not need to be overwritten.
-	 *
+	 * Processes physics in the new deterministic way
 	 * @param dt	Number of seconds since last animation frame
 	 */
+	@Override
 	public void postUpdate(float dt) {
+//		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
 		detPostUpdate(real, 0.015f);
 		detPostUpdate(compare, 0.015f);
 	}
+
+//	float difference = 0f;
+//	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+//		// find the new remaining time after the steps
+//		float sum = dt + remainingTime;
+//		while(sum > ministep){
+//			sum -= ministep;
+//		}
+//		// generate another random remaining time as the intended remaining time
+//		float skewedRemaining = ministep / 2;
+//		// calculate the new intended difference
+//		float new_intended_difference = skewedRemaining - sum;
+//		// find the gap between the two difference
+//		float gap_between_difference = new_intended_difference - difference;
+//		// update the previous difference
+//		difference = new_intended_difference;
+//		// calculate the result
+//		return dt + gap_between_difference;
+//	}
 
 	public void detPostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
@@ -327,13 +344,13 @@ public class PlatformPhysicsController extends WorldController implements Contac
 		speed  *= (avatar.isFacingRight() ? 1 : -1);
 		bullet.setVX(speed);
 		if(avatar == this.avatar){
-			System.out.println("1create bullet in real world");
+			System.out.println("create bullet in real world");
 			addRealQueuedObject(bullet);
 		}else if(avatar == this.benchmark_avatar){
-			System.out.println("1create bullet in compare world");
+			System.out.println("create bullet in compare world");
 			addCompareQueuedObject(bullet);
 		}else{
-			System.out.println("1error in creation of bullets");
+			System.out.println("error in creation of bullets");
 		}
 		fireId = playSound( fireSound, fireId );
 	}
@@ -375,12 +392,12 @@ public class PlatformPhysicsController extends WorldController implements Contac
 			// Test bullet collision with world
 			if (bd1.getName().equals("bullet") && bd2 != avatar) {
 				System.out.println("collision detected case 1");
-		        removeBullet(bd1);
+				removeBullet(bd1);
 			}
 
 			if (bd2.getName().equals("bullet") && bd1 != avatar) {
 				System.out.println("collision detected case 2");
-		        removeBullet(bd2);
+				removeBullet(bd2);
 			}
 
 			if (bd1.getName().equals("compareBullet") && bd2 != benchmark_avatar) {
