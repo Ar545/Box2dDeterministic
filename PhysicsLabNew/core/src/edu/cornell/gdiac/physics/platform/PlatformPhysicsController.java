@@ -10,19 +10,22 @@
  */
 package edu.cornell.gdiac.physics.platform;
 
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.audio.*;
-import com.badlogic.gdx.assets.*;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.physics.rocket.RocketModel;
-import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.physics.*;
-import edu.cornell.gdiac.physics.obstacle.*;
+import edu.cornell.gdiac.physics.InputController;
+import edu.cornell.gdiac.physics.WorldBenchmark;
+import edu.cornell.gdiac.physics.WorldController;
+import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
+import edu.cornell.gdiac.physics.obstacle.Obstacle;
+import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.physics.obstacle.WheelObstacle;
 
 /**
  * Gameplay specific controller for the platformer game.  
@@ -33,7 +36,7 @@ import edu.cornell.gdiac.physics.obstacle.*;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class PlatformController extends WorldController implements ContactListener {
+public class PlatformPhysicsController extends WorldController implements ContactListener {
 	/** Texture asset for character avatar */
 	private TextureRegion avatarTexture;
 	/** Texture asset for the spinning barrier */
@@ -75,11 +78,12 @@ public class PlatformController extends WorldController implements ContactListen
 	 *
 	 * The game has default gravity and other settings
 	 */
-	public PlatformController() {
+	public PlatformPhysicsController() {
 		super(DEFAULT_WIDTH,DEFAULT_HEIGHT,DEFAULT_GRAVITY);
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
+		compare.world.setContactListener(this);
 		real.world.setContactListener(this);
 		sensorFixtures = new ObjectSet<Fixture>();
 	}
@@ -113,7 +117,6 @@ public class PlatformController extends WorldController implements ContactListen
 	 */
 	public void reset() {
 		super.reset();
-		compare.world.setContactListener(this);
 		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
@@ -262,7 +265,7 @@ public class PlatformController extends WorldController implements ContactListen
 
 		// Add a bullet if we fire
 		if (avatar.isShooting()) {
-			System.out.println("is shooting");
+			System.out.println("shooting is");
 			createBullet(avatar);
 		}
 
@@ -273,36 +276,19 @@ public class PlatformController extends WorldController implements ContactListen
 	}
 
 	/**
-	 * Processes physics in the new deterministic way
+	 * Processes physics
+	 * Once the update phase is over, but before we draw, we are ready to handle
+	 * physics.  The primary method is the step() method in world.  This implementation
+	 * works for all applications and should not need to be overwritten.
+	 *
 	 * @param dt	Number of seconds since last animation frame
 	 */
-	@Override
 	public void postUpdate(float dt) {
-		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
-		indetPostUpdate(real, dt);
-		indetPostUpdate(compare, skewedDt);
+		detPostUpdate(real, 0.015f);
+		detPostUpdate(compare, 0.015f);
 	}
 
-	float difference = 0f;
-	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
-		// find the new remaining time after the steps
-		float sum = dt + remainingTime;
-		while(sum > ministep){
-			sum -= ministep;
-		}
-		// generate another random remaining time as the intended remaining time
-		float skewedRemaining = ministep / 2;
-		// calculate the new intended difference
-		float new_intended_difference = skewedRemaining - sum;
-		// find the gap between the two difference
-		float gap_between_difference = new_intended_difference - difference;
-		// update the previous difference
-		difference = new_intended_difference;
-		// calculate the result
-		return dt + gap_between_difference;
-	}
-
-	public void indetPostUpdate(WorldBenchmark wb, float dt) {
+	public void detPostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
 		while (!wb.addQueue.isEmpty()) {
 			addObject(wb, wb.addQueue.poll());
@@ -341,13 +327,13 @@ public class PlatformController extends WorldController implements ContactListen
 		speed  *= (avatar.isFacingRight() ? 1 : -1);
 		bullet.setVX(speed);
 		if(avatar == this.avatar){
-			System.out.println("create bullet in real world");
+			System.out.println("1create bullet in real world");
 			addRealQueuedObject(bullet);
 		}else if(avatar == this.benchmark_avatar){
-			System.out.println("create bullet in compare world");
+			System.out.println("1create bullet in compare world");
 			addCompareQueuedObject(bullet);
 		}else{
-			System.out.println("error in creation of bullets");
+			System.out.println("1error in creation of bullets");
 		}
 		fireId = playSound( fireSound, fireId );
 	}
@@ -389,12 +375,12 @@ public class PlatformController extends WorldController implements ContactListen
 			// Test bullet collision with world
 			if (bd1.getName().equals("bullet") && bd2 != avatar) {
 				System.out.println("collision detected case 1");
-				removeBullet(bd1);
+		        removeBullet(bd1);
 			}
 
 			if (bd2.getName().equals("bullet") && bd1 != avatar) {
 				System.out.println("collision detected case 2");
-				removeBullet(bd2);
+		        removeBullet(bd2);
 			}
 
 			if (bd1.getName().equals("compareBullet") && bd2 != benchmark_avatar) {
@@ -497,7 +483,7 @@ public class PlatformController extends WorldController implements ContactListen
 		super.draw(dt);
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
-		canvas.drawTextCentered("ORIGINAL WORLD", displayFont, 230f);
+		canvas.drawTextCentered("PHYSICS WORLD", displayFont, 230f);
 		canvas.end();
 	}
 }

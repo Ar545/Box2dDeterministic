@@ -288,17 +288,24 @@ public abstract class WorldController implements Screen {
 	}
 
 	/**
-	 *
 	 * Adds a physics object in to the insertion queue.
-	 *
 	 * Objects on the queue are added just before collision processing.  We do this to 
 	 * control object creation.
-	 *
 	 * param obj The object to add
 	 */
-	public void addQueuedObject(Obstacle obj) {
+	public void addRealQueuedObject(Obstacle obj) {
 		assert inBounds(obj) : "Object is not in bounds";
 		real.addQueuedObject(obj);
+	}
+
+	/**
+	 * Adds a physics object in to the insertion queue.
+	 * Objects on the queue are added just before collision processing.  We do this to
+	 * control object creation.
+	 * param obj The object to add
+	 */
+	public void addCompareQueuedObject(Obstacle obj) {
+		assert inBounds(obj) : "Object is not in bounds";
 		compare.addQueuedObject(obj);
 	}
 

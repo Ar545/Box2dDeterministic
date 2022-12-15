@@ -10,19 +10,22 @@
  */
 package edu.cornell.gdiac.physics.platform;
 
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.audio.*;
-import com.badlogic.gdx.assets.*;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.physics.rocket.RocketModel;
-import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.physics.*;
-import edu.cornell.gdiac.physics.obstacle.*;
+import edu.cornell.gdiac.physics.InputController;
+import edu.cornell.gdiac.physics.WorldBenchmark;
+import edu.cornell.gdiac.physics.WorldController;
+import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
+import edu.cornell.gdiac.physics.obstacle.Obstacle;
+import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.physics.obstacle.WheelObstacle;
 
 /**
  * Gameplay specific controller for the platformer game.  
@@ -33,7 +36,7 @@ import edu.cornell.gdiac.physics.obstacle.*;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class PlatformController extends WorldController implements ContactListener {
+public class PlatformFixedController extends WorldController implements ContactListener {
 	/** Texture asset for character avatar */
 	private TextureRegion avatarTexture;
 	/** Texture asset for the spinning barrier */
@@ -75,7 +78,7 @@ public class PlatformController extends WorldController implements ContactListen
 	 *
 	 * The game has default gravity and other settings
 	 */
-	public PlatformController() {
+	public PlatformFixedController() {
 		super(DEFAULT_WIDTH,DEFAULT_HEIGHT,DEFAULT_GRAVITY);
 		setDebug(false);
 		setComplete(false);
@@ -278,31 +281,31 @@ public class PlatformController extends WorldController implements ContactListen
 	 */
 	@Override
 	public void postUpdate(float dt) {
-		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
-		indetPostUpdate(real, dt);
-		indetPostUpdate(compare, skewedDt);
+//		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
+		detPostUpdate(real, 0.015f);
+		detPostUpdate(compare, 0.015f);
 	}
 
-	float difference = 0f;
-	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
-		// find the new remaining time after the steps
-		float sum = dt + remainingTime;
-		while(sum > ministep){
-			sum -= ministep;
-		}
-		// generate another random remaining time as the intended remaining time
-		float skewedRemaining = ministep / 2;
-		// calculate the new intended difference
-		float new_intended_difference = skewedRemaining - sum;
-		// find the gap between the two difference
-		float gap_between_difference = new_intended_difference - difference;
-		// update the previous difference
-		difference = new_intended_difference;
-		// calculate the result
-		return dt + gap_between_difference;
-	}
+//	float difference = 0f;
+//	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+//		// find the new remaining time after the steps
+//		float sum = dt + remainingTime;
+//		while(sum > ministep){
+//			sum -= ministep;
+//		}
+//		// generate another random remaining time as the intended remaining time
+//		float skewedRemaining = ministep / 2;
+//		// calculate the new intended difference
+//		float new_intended_difference = skewedRemaining - sum;
+//		// find the gap between the two difference
+//		float gap_between_difference = new_intended_difference - difference;
+//		// update the previous difference
+//		difference = new_intended_difference;
+//		// calculate the result
+//		return dt + gap_between_difference;
+//	}
 
-	public void indetPostUpdate(WorldBenchmark wb, float dt) {
+	public void detPostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
 		while (!wb.addQueue.isEmpty()) {
 			addObject(wb, wb.addQueue.poll());
@@ -497,7 +500,7 @@ public class PlatformController extends WorldController implements ContactListen
 		super.draw(dt);
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
-		canvas.drawTextCentered("ORIGINAL WORLD", displayFont, 230f);
+		canvas.drawTextCentered("PHYSICS WORLD", displayFont, 230f);
 		canvas.end();
 	}
 }
