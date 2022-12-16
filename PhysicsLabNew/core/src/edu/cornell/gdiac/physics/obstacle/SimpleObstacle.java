@@ -36,6 +36,9 @@ public abstract class SimpleObstacle extends Obstacle {
 	/** The physics body for Box2D. */
 	protected Body body;
 
+	/** The draw body for Box2D. */
+	protected Body drawBody;
+
 	/** The texture for the shape. */
 	protected TextureRegion texture;
 
@@ -803,6 +806,31 @@ public abstract class SimpleObstacle extends Obstacle {
 	public Body getBody() {
 		return body;
 	}
+
+	/**
+	 * Returns the Box2D body for this object.
+	 *
+	 * You use this body to add joints and apply forces.
+	 *
+	 * @return the Box2D body for this object.
+	 */
+	public Body getDrawBody() {
+		return drawBody;
+	}
+
+	/** sync draw body to real body */
+	public void syncBodies() {
+		drawBody.setType(body.getType());
+		drawBody.setTransform(body.getPosition(), body.getAngle());
+		drawBody.setAwake(body.isAwake());
+		drawBody.setBullet(body.isBullet());
+		drawBody.setLinearVelocity(body.getLinearVelocity());
+		drawBody.setSleepingAllowed(body.isSleepingAllowed());
+		drawBody.setFixedRotation(body.isFixedRotation());
+		drawBody.setGravityScale(body.getGravityScale());
+		drawBody.setAngularDamping(body.getAngularDamping());
+		drawBody.setLinearDamping(body.getLinearDamping());
+	}
 	
 	/**
 	 * Creates a new simple physics object at the origin.
@@ -824,15 +852,20 @@ public abstract class SimpleObstacle extends Obstacle {
 		origin = new Vector2();
 		body = null;
 	}
-	
+
+
+	/** Double world activate physics */
+	public boolean activatePhysics(World world, World drawWorld) {
+		boolean real = activatePhysics(true, world);
+		boolean draw = activatePhysics(false, drawWorld);
+		return real && draw;
+	}
+
 	/**
 	 * Creates the physics Body(s) for this object, adding them to the world.
-	 *
 	 * Implementations of this method should NOT retain a reference to World.  
 	 * That is a tight coupling that we should avoid.
-	 *
 	 * @param world Box2D world to store body
-	 *
 	 * @return true if object allocation succeeded
 	 */
 	public boolean activatePhysics(World world) {
@@ -847,6 +880,39 @@ public abstract class SimpleObstacle extends Obstacle {
 			return true;
 		} 
 		
+		bodyinfo.active = false;
+		return false;
+	}
+
+	/**
+	 * Creates the physics Body(s) for this object, adding them to the world.
+	 * Implementations of this method should NOT retain a reference to World.
+	 * That is a tight coupling that we should avoid.
+	 * @param world Box2D world to store body
+	 * @return true if object allocation succeeded
+	 */
+	public boolean activatePhysics(boolean isReal, World world) {
+		// Make a body, if possible
+		bodyinfo.active = true;
+		if(isReal){
+			body = world.createBody(bodyinfo);
+			body.setUserData(this);
+
+			// Only initialize if a body was created.
+			if (body != null) {
+				createFixturesDoubleWorld();
+				return true;
+			}
+		}else{
+			drawBody = world.createBody(bodyinfo);
+			drawBody.setUserData(this);
+
+			// Only initialize if a body was created.
+			if (drawBody != null) {
+				createFixtures();
+				return true;
+			}
+		}
 		bodyinfo.active = false;
 		return false;
 	}
@@ -868,6 +934,26 @@ public abstract class SimpleObstacle extends Obstacle {
 		}
 	}
 
+	/** deactivate physics for double world */
+	public void deactivatePhysics(World world, World drawWorld) {
+		// Should be good for most (simple) applications.
+		if (body != null) {
+			// Snapshot the values
+			setBodyState(body);
+			world.destroyBody(body);
+			body = null;
+			bodyinfo.active = false;
+		}
+		// Should be good for most (simple) applications.
+		if (drawBody != null) {
+			// Snapshot the values
+			setBodyState(drawBody);
+			world.destroyBody(drawBody);
+			drawBody = null;
+			bodyinfo.active = false;
+		}
+	}
+
 	/**
 	 * Create new fixtures for this body, defining the shape
 	 *
@@ -881,6 +967,14 @@ public abstract class SimpleObstacle extends Obstacle {
      * This is the primary method to override for custom physics objects.
      */
 	protected abstract void releaseFixtures();
+
+	/** Create new fixtures for this body, defining the shape
+	* This is the primary method to override for custom physics objects */
+	protected abstract void createFixturesDoubleWorld();
+
+	/** Release the fixtures for this body, reseting the shape
+	 * This is the primary method to override for custom physics objects. */
+	protected abstract void releaseFixturesDoubleWorld();
     
 	/**
 	 * Updates the object's physics state (NOT GAME LOGIC).

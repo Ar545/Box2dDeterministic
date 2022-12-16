@@ -31,6 +31,8 @@ public class BoxObstacle extends SimpleObstacle {
 	private Vector2 sizeCache;
 	/** A cache value for the fixture (for resizing) */
 	private Fixture geometry;
+	/** A cache value for the fixture (for resizing) */
+	private Fixture drawGeometry;
 	/** Cache of the polygon vertices (for resizing) */
 	private float[] vertices;
 	
@@ -141,6 +143,7 @@ public class BoxObstacle extends SimpleObstacle {
 		shape = new PolygonShape();
 		vertices = new float[8];
 		geometry = null;
+		drawGeometry = null;
 		
 		// Initialize
 		resize(width, height);	
@@ -190,6 +193,41 @@ public class BoxObstacle extends SimpleObstacle {
 	        body.destroyFixture(geometry);
 	        geometry = null;
 	    }
+	}
+
+	/**
+	 * Create new fixtures for this body, defining the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void createFixturesDoubleWorld() {
+		if (body == null || drawBody == null) {
+			return;
+		}
+
+		releaseFixtures();
+
+		// Create the fixture
+		fixture.shape = shape;
+		geometry = body.createFixture(fixture);
+		drawGeometry = drawBody.createFixture(fixture);
+		markDirty(false);
+	}
+
+	/**
+	 * Release the fixtures for this body, reseting the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void releaseFixturesDoubleWorld() {
+		if (geometry != null ) {
+			body.destroyFixture(geometry);
+			geometry = null;
+		}
+		if (drawGeometry != null) {
+			drawBody.destroyFixture(drawGeometry);
+			drawGeometry = null;
+		}
 	}
 
 	

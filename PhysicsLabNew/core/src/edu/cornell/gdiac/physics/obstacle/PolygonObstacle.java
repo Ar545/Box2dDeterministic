@@ -47,6 +47,8 @@ public class PolygonObstacle extends SimpleObstacle {
 
 	/** A cache value for the fixtures (for resizing) */
 	private Fixture[] geoms;
+	/** A cache value for the fixtures (for resizing) */
+	private Fixture[] drawGeoms;
 	/** The polygon bounding box (for resizing purposes) */
 	private Vector2 dimension;
 	/** A cache value for when the user wants to access the dimensions */
@@ -209,6 +211,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		vertices = new float[tris*6];
 		shapes = new PolygonShape[tris];
 		geoms  = new Fixture[tris];
+		drawGeoms  = new Fixture[tris];
 		for(int ii = 0; ii < tris; ii++) {
 			for(int jj = 0; jj < 3; jj++) {
 				vertices[6*ii+2*jj  ] = points[2*array.items[3*ii+jj]  ];
@@ -313,6 +316,49 @@ public class PolygonObstacle extends SimpleObstacle {
 		if (geoms[0] != null) {
 			for(Fixture fix : geoms) {
 				body.destroyFixture(fix);
+			}
+		}
+	}
+
+	/**
+	 * Create new fixtures for this body, defining the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void createFixturesDoubleWorld() {
+		if (body == null || drawBody == null) {
+			return;
+		}
+
+		releaseFixtures();
+
+		// Create the fixtures
+		for(int ii = 0; ii < shapes.length; ii++) {
+			fixture.shape = shapes[ii];
+			geoms[ii] = body.createFixture(fixture);
+		}
+		// Create the fixtures
+		for(int ii = 0; ii < shapes.length; ii++) {
+			fixture.shape = shapes[ii];
+			drawGeoms[ii] = drawBody.createFixture(fixture);
+		}
+		markDirty(false);
+	}
+
+	/**
+	 * Release the fixtures for this body, reseting the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void releaseFixturesDoubleWorld() {
+		if (geoms[0] != null) {
+			for(Fixture fix : geoms) {
+				body.destroyFixture(fix);
+			}
+		}
+		if (drawGeoms[0] != null) {
+			for(Fixture fix : drawGeoms) {
+				drawBody.destroyFixture(fix);
 			}
 		}
 	}

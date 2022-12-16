@@ -100,14 +100,22 @@ public class RopeBridge extends ComplexObstacle {
 	    }
 	}
 
+	/** THIS IS AN INCORRECT IMPLEMENTATION OF DOUBLE WORLD
+	 * TODO :: implement true double-world on platform world
+	 * @param world Box2D world to store joints
+	 * @return true if object allocation succeeded
+	 */
+	protected boolean createJoints(World world, World drawWorld) {
+		boolean real = createJoints(world);
+		boolean draw = createJoints(drawWorld);
+		return real && draw;
+	}
+
 	/**
 	 * Creates the joints for this object.
-	 * 
 	 * This method is executed as part of activePhysics. This is the primary method to 
 	 * override for custom physics objects.
-	 *
 	 * @param world Box2D world to store joints
-	 *
 	 * @return true if object allocation succeeded
 	 */
 	protected boolean createJoints(World world) {

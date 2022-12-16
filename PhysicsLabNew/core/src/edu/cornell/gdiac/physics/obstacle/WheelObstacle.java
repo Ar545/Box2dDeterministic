@@ -26,6 +26,8 @@ public class WheelObstacle extends SimpleObstacle {
 	protected CircleShape shape;
 	/** A cache value for the fixture (for resizing) */
 	private Fixture geometry;
+	/** A cache value for the fixture (for resizing) */
+	private Fixture drawGeometry;
 	
 	/**
 	 * Returns the radius of this circle
@@ -93,6 +95,25 @@ public class WheelObstacle extends SimpleObstacle {
 		geometry = body.createFixture(fixture);
 		markDirty(false);
 	}
+
+	/**
+	 * Create new fixtures for this body, defining the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void createFixturesDoubleWorld() {
+		if (body == null || drawBody == null) {
+			return;
+		}
+
+		releaseFixtures();
+
+		// Create the fixture
+		fixture.shape = shape;
+		geometry = body.createFixture(fixture);
+		drawGeometry = drawBody.createFixture(fixture);
+		markDirty(false);
+	}
 	
 	/**
 	 * Release the fixtures for this body, reseting the shape
@@ -104,6 +125,22 @@ public class WheelObstacle extends SimpleObstacle {
 	        body.destroyFixture(geometry);
 	        geometry = null;
 	    }
+	}
+
+	/**
+	 * Release the fixtures for this body, reseting the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void releaseFixturesDoubleWorld() {
+		if (geometry != null) {
+			body.destroyFixture(geometry);
+			geometry = null;
+		}
+		if (drawGeometry != null) {
+			drawBody.destroyFixture(drawGeometry);
+			drawGeometry = null;
+		}
 	}
 	
 	/**

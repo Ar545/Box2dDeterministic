@@ -62,6 +62,12 @@ public class CapsuleObstacle extends SimpleObstacle {
     private Fixture cap1;
     /** A cache value for the second end cap fixture (for resizing) */
     private Fixture cap2;
+	/** A cache value for the center fixture (for resizing) */
+	private Fixture drawCore;
+	/** A cache value for the first end cap fixture (for resizing) */
+	private Fixture drawCap1;
+	/** A cache value for the second end cap fixture (for resizing) */
+	private Fixture drawCap2;
     /** The capsule orientation */
     private Orientation orient;
 	/** Cache of the polygon vertices (for resizing) */
@@ -223,7 +229,7 @@ public class CapsuleObstacle extends SimpleObstacle {
      * orientation.
      * 
 	 * The size is expressed in physics units NOT pixels.  In order for 
-	 * drawing to work properly, you MUST set the drawScale. The drawScale 
+	 * drawing to work properly, you MUST set the drawScale. The drawScale
 	 * converts the physics units to pixels.
 	 *
 	 * @param width		The object width in physics units
@@ -457,6 +463,91 @@ public class CapsuleObstacle extends SimpleObstacle {
 	}
 
 	/**
+	 * Create new fixtures for this body, defining the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void createFixturesDoubleWorld() {
+		if (body == null || drawBody == null) {
+			return;
+		}
+
+		releaseFixtures();
+
+		// Create the fixture
+		fixture.shape = shape;
+		core = body.createFixture(fixture);
+		drawCore = drawBody.createFixture(fixture);
+
+		fixture.density = fixture.density/2.0f;
+		posCache.set(0,0);
+		switch (orient) {
+			case TOP:
+				posCache.y = center.y+center.height;
+				end1.setPosition(posCache);
+				fixture.shape = end1;
+				cap1 = body.createFixture(fixture);
+				drawCap1 = drawBody.createFixture(fixture);
+				cap2 = null;
+				drawCap2 = null;
+				break;
+			case VERTICAL:
+				posCache.y = center.y+center.height;
+				end1.setPosition(posCache);
+				fixture.shape = end1;
+				cap1 = body.createFixture(fixture);
+				drawCap1 = drawBody.createFixture(fixture);
+				posCache.y = center.y;
+				end2.setPosition(posCache);
+				fixture.shape = end2;
+				cap2 = body.createFixture(fixture);
+				drawCap2 = drawBody.createFixture(fixture);
+				break;
+			case BOTTOM:
+				cap1 = null;
+				drawCap1 = null;
+				posCache.y = center.y;
+				end2.setPosition(posCache);
+				fixture.shape = end2;
+				cap2 = body.createFixture(fixture);
+				drawCap2 = drawBody.createFixture(fixture);
+				break;
+			case LEFT:
+				posCache.x = center.x;
+				end1.setPosition(posCache);
+				fixture.shape = end1;
+				cap1 = body.createFixture(fixture);
+				drawCap1 = drawBody.createFixture(fixture);
+				cap2 = null;
+				drawCap2 = null;
+				break;
+			case HORIZONTAL:
+				posCache.x = center.x;
+				end1.setPosition(posCache);
+				fixture.shape = end1;
+				cap1 = body.createFixture(fixture);
+				drawCap1 = drawBody.createFixture(fixture);
+				posCache.x = center.x+center.width;
+				end2.setPosition(posCache);
+				fixture.shape = end2;
+				cap2 = body.createFixture(fixture);
+				drawCap2 = drawBody.createFixture(fixture);
+				break;
+			case RIGHT:
+				cap1 = null;
+				drawCap1 = null;
+				posCache.x = center.x+center.width;
+				end2.setPosition(posCache);
+				fixture.shape = end2;
+				cap2 = body.createFixture(fixture);
+				drawCap2 = drawBody.createFixture(fixture);
+				break;
+		}
+
+		markDirty(false);
+	}
+
+	/**
 	 * Release the fixtures for this body, reseting the shape
 	 *
 	 * This is the primary method to override for custom physics objects
@@ -474,6 +565,38 @@ public class CapsuleObstacle extends SimpleObstacle {
 	        body.destroyFixture(cap2);
 	        cap2 = null;
 	    }
+	}
+
+	/**
+	 * Release the fixtures for this body, reseting the shape
+	 *
+	 * This is the primary method to override for custom physics objects
+	 */
+	protected void releaseFixturesDoubleWorld() {
+		if (core != null) {
+			body.destroyFixture(core);
+			core = null;
+		}
+		if (cap1 != null) {
+			body.destroyFixture(cap1);
+			cap1 = null;
+		}
+		if (cap2 != null) {
+			body.destroyFixture(cap2);
+			cap2 = null;
+		}
+		if (drawCore != null) {
+			drawBody.destroyFixture(drawCore);
+			drawCore = null;
+		}
+		if (drawCap1 != null) {
+			drawBody.destroyFixture(drawCap1);
+			drawCap1 = null;
+		}
+		if (drawCap2 != null) {
+			drawBody.destroyFixture(drawCap2);
+			drawCap2 = null;
+		}
 	}
 	
 	/**
