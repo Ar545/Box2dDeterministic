@@ -239,7 +239,24 @@ public class BoxObstacle extends SimpleObstacle {
 	 * @param canvas Drawing context
 	 */
 	public void drawDebug(GameCanvas canvas) {
-		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
+		if(drawBody == null){
+			canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
+		}else{
+			canvas.drawPhysics(shape,Color.YELLOW,getDrawX(),getDrawY(),getDrawAngle(),drawScale.x,drawScale.y);
+		}
+
+	}
+
+	/**
+	 * Draws the outline of the physics body.
+	 *
+	 * This method can be helpful for understanding issues with collisions.
+	 *
+	 * @param canvas Drawing context
+	 */
+	public void drawDebug(GameCanvas canvas, float velocityTimeOffset) {
+		Vector2 offset = body.getLinearVelocity().cpy().scl(velocityTimeOffset);
+		canvas.drawPhysics(shape,Color.YELLOW,getX() + offset.x,getY() + offset.y,getAngle(),drawScale.x,drawScale.y);
 	}
 
 

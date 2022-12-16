@@ -1166,4 +1166,13 @@ public abstract class ComplexObstacle extends Obstacle {
 		}
 	}
 
+	/**
+	 * Draws the outline of the physics body.
+	 * This method can be helpful for understanding issues with collisions.
+	 * @param canvas Drawing context
+	 */
+	public void drawDebug(GameCanvas canvas, float offset){
+		drawDebug(canvas);
+	}
+
 }

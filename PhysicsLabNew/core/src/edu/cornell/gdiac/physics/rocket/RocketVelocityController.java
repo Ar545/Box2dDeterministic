@@ -525,7 +525,7 @@ public class RocketVelocityController extends WorldController implements Contact
 		if (isDebug()) {
 			canvas.beginDebug();
 			for(Obstacle obj : compare.objects) {
-				obj.drawDebug(canvas);
+				obj.drawDebug(canvas, compare.remainingTime);
 			}
 			canvas.endDebug();
 		}

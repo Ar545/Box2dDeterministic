@@ -830,6 +830,15 @@ public abstract class SimpleObstacle extends Obstacle {
 					(getY() + offset.y) * drawScale.x, getAngle(), 1, 1);
 		}
 	}
+
+	/**
+	 * Draws the outline of the physics body.
+	 * This method can be helpful for understanding issues with collisions.
+	 * @param canvas Drawing context
+	 */
+	public void drawDebug(GameCanvas canvas, float offset){
+		drawDebug(canvas);
+	}
 	
 	/**
 	 * Returns the Box2D body for this object.
