@@ -983,7 +983,7 @@ public abstract class SimpleObstacle extends Obstacle {
 		if (drawBody != null) {
 			// Snapshot the values
 			setBodyState(drawBody);
-			world.destroyBody(drawBody);
+			drawWorld.destroyBody(drawBody);
 			drawBody = null;
 			bodyinfo.active = false;
 		}

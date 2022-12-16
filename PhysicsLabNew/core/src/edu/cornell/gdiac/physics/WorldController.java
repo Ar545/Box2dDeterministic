@@ -47,7 +47,7 @@ import edu.cornell.gdiac.physics.obstacle.*;
  */
 public abstract class WorldController implements Screen {
 	/** the fixed physics time step */
-	public final float miniStep = 0.003f;
+	public final float miniStep = 0.007f;
 	/** if true, all objects in world should be drawn with velocity offset */
 	public boolean VELOCITY_WORLD = false;
 	/** if true, all objects in the world should be drawn with the draw body */
