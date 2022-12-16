@@ -135,6 +135,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	 */
 	public void reset() {
 		super.reset();
+		compare.world.setContactListener(this);
 		real.world.setContactListener(this);
 		setComplete(false);
 		setFailure(false);
@@ -574,6 +575,8 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("REAL-DRAW WORLD", displayFont, 230f);
+		displayFont.setColor(Color.YELLOW);
+		canvas.drawTextCentered("Det", displayFont, 150f);
 		canvas.end();
 	}
 }

@@ -510,6 +510,8 @@ public class RocketPhysicsController extends WorldController implements ContactL
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("PHYSICS WORLD", displayFont, 230f);
+		displayFont.setColor(Color.YELLOW);
+		canvas.drawTextCentered("Det", displayFont, 150f);
 		canvas.end();
 	}
 }

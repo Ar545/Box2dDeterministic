@@ -502,7 +502,7 @@ public class PlatformPhysicsController extends WorldController implements Contac
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("PHYSICS WORLD", displayFont, 230f);
 		displayFont.setColor(Color.SALMON);
-		canvas.drawTextCentered("Nondeterminism", displayFont, 130f);
+		canvas.drawTextCentered("Non-det", displayFont, 150f);
 		canvas.end();
 	}
 }

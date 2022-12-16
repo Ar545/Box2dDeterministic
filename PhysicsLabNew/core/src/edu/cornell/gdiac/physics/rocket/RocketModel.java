@@ -202,6 +202,30 @@ public class RocketModel extends BoxObstacle {
 		
 		return true;
 	}
+
+	/**
+	 * Creates the physics Body(s) for this object, adding them to the world.
+	 *
+	 * This method overrides the base method to keep your ship from spinning.
+	 *
+	 * @param world Box2D world to store body
+	 *
+	 * @return true if object allocation succeeded
+	 */
+	public boolean activatePhysics(World world, World drawWorld) {
+		// Get the box body from our parent class
+		if (!super.activatePhysics(world, drawWorld)) {
+			return false;
+		}
+
+		//#region INSERT CODE HERE
+		// Insert code here to prevent the body from rotating
+		body.setFixedRotation(true);
+		drawBody.setFixedRotation(true);
+		//#endregion
+
+		return true;
+	}
 	
 	
 	/**

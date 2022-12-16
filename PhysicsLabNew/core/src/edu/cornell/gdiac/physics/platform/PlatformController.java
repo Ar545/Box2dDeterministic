@@ -498,6 +498,8 @@ public class PlatformController extends WorldController implements ContactListen
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("ORIGINAL WORLD", displayFont, 230f);
+		displayFont.setColor(Color.SALMON);
+		canvas.drawTextCentered("Non-det", displayFont, 150f);
 		canvas.end();
 	}
 }

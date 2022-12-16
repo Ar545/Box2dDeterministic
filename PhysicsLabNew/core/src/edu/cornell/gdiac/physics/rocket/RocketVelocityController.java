@@ -546,6 +546,8 @@ public class RocketVelocityController extends WorldController implements Contact
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("VELOCITY WORLD", displayFont, 230f);
+		displayFont.setColor(Color.YELLOW);
+		canvas.drawTextCentered("Det", displayFont, 150f);
 		canvas.end();
 	}
 }
