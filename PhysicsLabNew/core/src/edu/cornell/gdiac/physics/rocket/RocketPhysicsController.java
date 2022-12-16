@@ -137,6 +137,7 @@ public class RocketPhysicsController extends WorldController implements ContactL
 		setFailure(false);
 		populateLevel(real);
 		populateLevel(compare);
+		initial = true;
 	}
 
 	/**
@@ -284,28 +285,24 @@ public class RocketPhysicsController extends WorldController implements ContactL
 	 */
 	@Override
 	public void postUpdate(float dt) {
-		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
+		float skewedDt = computeSkewedDt(dt, real.remainingTime, miniStep);
 		physicsPostUpdate(real, dt);
 		physicsPostUpdate(compare, skewedDt);
 	}
-
-	float difference = 0f;
+	boolean initial = true;
 	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
 		// find the new remaining time after the steps
 		float sum = dt + remainingTime;
+		float step = 0f;
 		while(sum > ministep){
 			sum -= ministep;
+			step += ministep;
 		}
-		// generate another random remaining time as the intended remaining time
-		float skewedRemaining = ministep / 2;
-		// calculate the new intended difference
-		float new_intended_difference = skewedRemaining - sum;
-		// find the gap between the two difference
-		float gap_between_difference = new_intended_difference - difference;
-		// update the previous difference
-		difference = new_intended_difference;
-		// calculate the result
-		return dt + gap_between_difference;
+		if(initial){
+			initial = false;
+			step += ministep / 2;
+		}
+		return step;
 	}
 
 	private void physicsPostUpdate(WorldBenchmark wb, float dt) {
@@ -340,7 +337,7 @@ public class RocketPhysicsController extends WorldController implements ContactL
 //		System.out.println("dt is "+ dt);
 
 		// The total time needed to simulate
-		float totalTime = remainingTime + dt;
+		float totalTime = wb.remainingTime + dt;
 		// The total sim time (needed for obj->update)
 		while (totalTime > miniStep) {
 			// apply all forces
@@ -349,6 +346,7 @@ public class RocketPhysicsController extends WorldController implements ContactL
 			wb.world.step(miniStep, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
 			totalTime -= miniStep;
 		}
+		wb.remainingTime = totalTime;
 		// update the graphics for the total sim time
 		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
 		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);

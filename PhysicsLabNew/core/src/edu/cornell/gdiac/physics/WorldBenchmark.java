@@ -9,12 +9,18 @@ import edu.cornell.gdiac.util.PooledList;
 import java.util.Iterator;
 
 public class WorldBenchmark {
+    /** The velocity offset in VELOCITY_WORLD */
+    public float remainingTime = 0f;
+    boolean doubleWorld = false;
     /** All the objects in the world. */
     public PooledList<Obstacle> objects  = new PooledList<Obstacle>();
     /** Queue for adding objects */
     public PooledList<Obstacle> addQueue = new PooledList<Obstacle>();
     /** The Box2D world */
     public World world;
+
+    /** The Box2D draw world */
+    public World drawWorld;
 
     /** The amount of time for a physics engine step. */
     public static final float WORLD_STEP = 1/60.0f;
@@ -25,23 +31,35 @@ public class WorldBenchmark {
 
     public WorldBenchmark(Vector2 gravity){
         world = new World(gravity,false);
+        drawWorld = new World(gravity,false);
     }
 
     public void dispose() {
         for(Obstacle obj : objects) {
-            obj.deactivatePhysics(world);
+            if(doubleWorld){
+                obj.deactivatePhysics(world, drawWorld);
+            }else{
+                obj.deactivatePhysics(world);
+            }
         }
         objects.clear();
         addQueue.clear();
         world.dispose();
+        drawWorld.dispose();
         objects = null;
         addQueue = null;
         world  = null;
+        drawWorld = null;
+        remainingTime = 0;
     }
 
     public void addObject(Obstacle obj) {
         objects.add(obj);
-        obj.activatePhysics(world);
+        if(doubleWorld){
+            obj.activatePhysics(world, drawWorld);
+        }else{
+            obj.activatePhysics(world);
+        }
     }
 
     public void addQueuedObject(Obstacle obj) {
@@ -57,7 +75,11 @@ public class WorldBenchmark {
             PooledList<Obstacle>.Entry entry = iterator.next();
             Obstacle obj = entry.getValue();
             if (obj.isRemoved()) {
-                obj.deactivatePhysics(world);
+                if(doubleWorld){
+                    obj.deactivatePhysics(world, drawWorld);
+                }else{
+                    obj.deactivatePhysics(world);
+                }
                 entry.remove();
             } else {
                 // Note that update is called last!
@@ -82,15 +104,24 @@ public class WorldBenchmark {
         Vector2 gravity = new Vector2(world.getGravity() );
 
         for(Obstacle obj : objects) {
-            obj.deactivatePhysics(world);
+            if(doubleWorld){
+                obj.deactivatePhysics(world, drawWorld);
+            }else{
+                obj.deactivatePhysics(world);
+            }
         }
+
         objects.clear();
         addQueue.clear();
         world.dispose();
-
+        drawWorld.dispose();
         world = new World(gravity,false);
+        drawWorld = new World(gravity,false);
+        remainingTime = 0;
     }
 
 
-
+    public void setDoubleWorld() {
+        doubleWorld = true;
+    }
 }

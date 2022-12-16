@@ -278,7 +278,7 @@ public class PlatformController extends WorldController implements ContactListen
 	 */
 	@Override
 	public void postUpdate(float dt) {
-		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
+		float skewedDt = computeSkewedDt(dt, 0, miniStep);
 		indetPostUpdate(real, dt);
 		indetPostUpdate(compare, skewedDt);
 	}

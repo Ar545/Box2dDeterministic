@@ -90,10 +90,14 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	 * The game has default gravity and other settings
 	 */
 	public RocketDoubleWorldController() {
+//		super();
+		real.setDoubleWorld();
+		compare.setDoubleWorld();
 		bumpIds = new Queue<Long>();
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
+		compare.world.setContactListener(this);
 		real.world.setContactListener(this);
 		DOUBLE_WORLD = true;
 	}
@@ -136,6 +140,7 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		setFailure(false);
 		populateLevel(real);
 		populateLevel(compare);
+		initial = true;
 	}
 
 	/**
@@ -276,7 +281,26 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		//world.clearForces();
 		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
 		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
+		// update the graphics for the total sim time
+		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+		// apply force
 		rocket.applyForce();
+	}
+
+	/** apply force to the rocket */
+	private void applyForceToRocketDrawWorld(WorldBenchmark wb) {
+		RocketModel rocket = wb == real ? this.rocket : this.rocket_benchmark;
+		//world.clearForces();
+		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
+		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
+		// update the graphics for the total sim time
+		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+		// apply force
+		rocket.applyForceDrawBody();
 	}
 
 	/**
@@ -285,8 +309,25 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	 */
 	@Override
 	public void postUpdate(float dt) {
+		float skewedDt = computeSkewedDt(dt, real.remainingTime, miniStep);
 		doublePostUpdate(real, dt);
 		doublePostUpdate(compare, dt);
+	}
+
+	boolean initial = true;
+	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+		// find the new remaining time after the steps
+		float sum = dt + remainingTime;
+		float step = 0f;
+		while(sum > ministep){
+			sum -= ministep;
+			step += ministep;
+		}
+		if(initial){
+			initial = false;
+			step += ministep / 2;
+		}
+		return step;
 	}
 
 	private void doublePostUpdate(WorldBenchmark wb, float dt) {
@@ -321,8 +362,9 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 	private void ProcessPhysics(WorldBenchmark wb, float dt) {
 //		System.out.println("dt is "+ dt);
 
+
 		// The total time needed to simulate
-		float totalTime = remainingTime + dt;
+		float totalTime = wb.remainingTime + dt;
 		// The total sim time (needed for obj->update)
 		while (totalTime > miniStep) {
 			// apply all forces
@@ -331,10 +373,19 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 			wb.world.step(miniStep, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
 			totalTime -= miniStep;
 		}
-		// update the graphics for the total sim time
-		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
-		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
-		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+		// Now our real world is in the right state. Make one final step to set up the draw world and
+		// remember the remaining time from this frame
+		wb.remainingTime = totalTime;
+		// Sync real body to draw body
+		for (Obstacle o :  wb.objects) {
+			o.syncBodies();
+		}
+		wb.drawWorld.clearForces();
+		applyForceToRocketDrawWorld(wb);
+		wb.world.clearForces();
+		// Step the draw world by the remaining time
+		wb.drawWorld.step(wb.remainingTime, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
+
 	}
 	
 	/**
@@ -523,8 +574,6 @@ public class RocketDoubleWorldController extends WorldController implements Cont
 		displayFont.setColor(Color.GREEN);
 		canvas.begin(); // DO NOT SCALE
 		canvas.drawTextCentered("REAL-DRAW WORLD", displayFont, 230f);
-		displayFont.setColor(Color.RED);
-		canvas.drawTextCentered("NOT YET FINISHED", displayFont, 30f);
 		canvas.end();
 	}
 }

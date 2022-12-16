@@ -127,6 +127,15 @@ public abstract class SimpleObstacle extends Obstacle {
 	public float getX() {
 		return (body != null ? body.getPosition().x : super.getX());
 	}
+
+	/**
+	 * Returns the x-coordinate for this physics body
+	 *
+	 * @return the x-coordinate for this physics body
+	 */
+	public float getDrawX() {
+		return (drawBody != null ? drawBody.getPosition().x : super.getX());
+	}
 	
 	/**
 	 * Sets the x-coordinate for this physics body
@@ -149,6 +158,15 @@ public abstract class SimpleObstacle extends Obstacle {
 	 */
 	public float getY() {
 		return (body != null ? body.getPosition().y : super.getY());
+	}
+
+	/**
+	 * Returns the y-coordinate for this physics body
+	 *
+	 * @return the y-coordinate for this physics body
+	 */
+	public float getDrawY() {
+		return (drawBody != null ? drawBody.getPosition().y : super.getY());
 	}
 	
 	/**
@@ -174,6 +192,17 @@ public abstract class SimpleObstacle extends Obstacle {
 	 */
 	public float getAngle() {
 		return (body != null ? body.getAngle() : super.getAngle());
+	}
+
+	/**
+	 * Returns the angle of rotation for this body (about the center).
+	 *
+	 * The value returned is in radians
+	 *
+	 * @return the angle of rotation for this body
+	 */
+	public float getDrawAngle() {
+		return (drawBody != null ? drawBody.getAngle() : super.getAngle());
 	}
 	
 	/**
@@ -779,9 +808,15 @@ public abstract class SimpleObstacle extends Obstacle {
 	 */
 	public void draw(GameCanvas canvas) {
 		if (texture != null) {
-			canvas.draw(texture,Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
+			if(drawBody == null){
+				canvas.draw(texture,Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
+			}else{ // double world implementation
+				canvas.draw(texture,Color.WHITE,origin.x,origin.y,getDrawX()*drawScale.x,getDrawY()*drawScale.x,getDrawAngle(),1,1);
+			}
+
 		}
 	}
+
 
 	/**
 	 * Draws the texture physics object with the velocity time offset

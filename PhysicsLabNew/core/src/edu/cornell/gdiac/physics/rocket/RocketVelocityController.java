@@ -136,6 +136,7 @@ public class RocketVelocityController extends WorldController implements Contact
 		setFailure(false);
 		populateLevel(real);
 		populateLevel(compare);
+		initial = true;
 	}
 
 	/**
@@ -276,6 +277,11 @@ public class RocketVelocityController extends WorldController implements Contact
 		//world.clearForces();
 		rocket.setFX(InputController.getInstance().getHorizontal() * rocket.getThrust());
 		rocket.setFY(InputController.getInstance().getVertical() * rocket.getThrust());
+		// update the graphics for the total sim time
+		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
+		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
+		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+		// apply force
 		rocket.applyForce();
 	}
 
@@ -285,29 +291,45 @@ public class RocketVelocityController extends WorldController implements Contact
 	 */
 	@Override
 	public void postUpdate(float dt) {
-		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
+		float skewedDt = computeSkewedDt(dt, real.remainingTime, miniStep);
 		velocityPostUpdate(real, dt);
 		velocityPostUpdate(compare, skewedDt);
 	}
 
-	double difference = 0f;
+	boolean initial = true;
 	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
 		// find the new remaining time after the steps
 		float sum = dt + remainingTime;
+		float step = 0f;
 		while(sum > ministep){
 			sum -= ministep;
+			step += ministep;
 		}
-		// generate another random remaining time as the intended remaining time
-		double skewedRemaining = ministep / 2;
-		// calculate the new intended difference
-		double new_intended_difference = skewedRemaining - sum;
-		// find the gap between the two difference
-		double gap_between_difference = new_intended_difference - difference;
-		// update the previous difference
-		difference = new_intended_difference;
-		// calculate the result
-		return (float) (dt + gap_between_difference);
+		if(initial){
+			initial = false;
+			step += ministep / 2;
+		}
+		return step;
 	}
+
+//	double difference = 0f;
+//	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
+//		// find the new remaining time after the steps
+//		float sum = dt + remainingTime;
+//		while(sum > ministep){
+//			sum -= ministep;
+//		}
+//		// generate another random remaining time as the intended remaining time
+//		double skewedRemaining = ministep / 2;
+//		// calculate the new intended difference
+//		double new_intended_difference = skewedRemaining - sum;
+//		// find the gap between the two difference
+//		double gap_between_difference = new_intended_difference - difference;
+//		// update the previous difference
+//		difference = new_intended_difference;
+//		// calculate the result
+//		return (float) (dt + gap_between_difference);
+//	}
 
 	public void velocityPostUpdate(WorldBenchmark wb, float dt) {
 		// Add any objects created by actions
@@ -327,7 +349,7 @@ public class RocketVelocityController extends WorldController implements Contact
 //		System.out.println("dt is "+ dt);
 
 		// The total time needed to simulate
-		float totalTime = remainingTime + dt;
+		float totalTime = wb.remainingTime + dt;
 		// The total sim time (needed for obj->update)
 		while (totalTime > miniStep) {
 			// apply all forces
@@ -336,10 +358,7 @@ public class RocketVelocityController extends WorldController implements Contact
 			wb.world.step(miniStep, WorldBenchmark.WORLD_VELOC, WorldBenchmark.WORLD_POSIT);
 			totalTime -= miniStep;
 		}
-		// update the graphics for the total sim time
-		updateBurner(RocketModel.Burner.MAIN, rocket.getFY() > 1);
-		updateBurner(RocketModel.Burner.LEFT, rocket.getFX() > 1);
-		updateBurner(RocketModel.Burner.RIGHT, rocket.getFX() < -1);
+		wb.remainingTime = totalTime;
 	}
 	
 	/**
@@ -499,7 +518,7 @@ public class RocketVelocityController extends WorldController implements Contact
 
 		canvas.begin();
 		for(Obstacle obj : real.objects) {
-			obj.draw(canvas, remainingTime);
+			obj.draw(canvas, real.remainingTime);
 		}
 		canvas.end();
 

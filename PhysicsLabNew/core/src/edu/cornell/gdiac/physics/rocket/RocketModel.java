@@ -224,6 +224,26 @@ public class RocketModel extends BoxObstacle {
 		//#endregion
 	}
 
+	/**
+	 * Applies the force to the body of this ship
+	 *
+	 * This method should be called after the force attribute is set.
+	 */
+	public void applyForceDrawBody() {
+		if (!isActive()) {
+			return;
+		}
+
+		// Orient the force with rotation.
+		affineCache.setToRotationRad(getAngle());
+		affineCache.applyTo(force);
+
+		//#region INSERT CODE HERE
+		// Apply force to the rocket BODY, not the rocket
+		drawBody.applyForce(getForce(), getPosition(), true);
+		//#endregion
+	}
+
 	// Animation methods (DO NOT CHANGE)
 	/**
 	 * Returns the animation node for the given afterburner
@@ -431,6 +451,21 @@ public class RocketModel extends BoxObstacle {
 	 */
 	public void draw(GameCanvas canvas) {
 		super.draw(canvas);  // Ship
+		// Flames
+		if (mainBurner != null) {
+			float offsety = mainBurner.getRegionHeight()-origin.y;
+			canvas.draw(mainBurner,Color.WHITE,origin.x,offsety,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
+		}
+		if (leftBurner != null) {
+			canvas.draw(leftBurner,Color.WHITE,leftOrigin.x,leftOrigin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
+		}
+		if (rghtBurner != null) {
+			canvas.draw(rghtBurner,Color.WHITE,rghtOrigin.x,rghtOrigin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
+		}
+	}
+
+	public void draw(GameCanvas canvas, float remainingTime){
+		super.draw(canvas, remainingTime);
 		// Flames
 		if (mainBurner != null) {
 			float offsety = mainBurner.getRegionHeight()-origin.y;

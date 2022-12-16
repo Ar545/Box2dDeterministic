@@ -130,6 +130,7 @@ public class RocketController extends WorldController implements ContactListener
 		setFailure(false);
 		populateLevel(real);
 		populateLevel(compare);
+		initial = true;
 	}
 
 	/**
@@ -278,29 +279,27 @@ public class RocketController extends WorldController implements ContactListener
 	 */
 	@Override
 	public void postUpdate(float dt) {
-		float skewedDt = computeSkewedDt(dt, remainingTime, miniStep);
+		float skewedDt = computeSkewedDt(dt, real.remainingTime, miniStep);
 		indetPostUpdate(real, dt);
 		indetPostUpdate(compare, skewedDt);
 //		System.out.println("skewed:" + skewedDt + "actual:" + dt);
 	}
 
-	float difference = 0f;
+	boolean initial = true;
 	private float computeSkewedDt(float dt, float remainingTime, float ministep) {
 		// find the new remaining time after the steps
 		float sum = dt + remainingTime;
+		float step = 0f;
 		while(sum > ministep){
 			sum -= ministep;
+			step += ministep;
 		}
-		// generate another random remaining time as the intended remaining time
-		float skewedRemaining = ministep / 2;
-		// calculate the new intended difference
-		float new_intended_difference = skewedRemaining - sum;
-		// find the gap between the two difference
-		float gap_between_difference = new_intended_difference - difference;
-		// update the previous difference
-		difference = new_intended_difference;
-		// calculate the result
-		return dt + gap_between_difference;
+		real.remainingTime = sum;
+		if(initial){
+			initial = false;
+			step += ministep / 2;
+		}
+		return step;
 	}
 
 	public void indetPostUpdate(WorldBenchmark wb, float dt) {
